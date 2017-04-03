@@ -64,7 +64,7 @@ function init(){
     satPositions = gridPositions(satFieldWidth, satFieldHeight, satellite);
 
     // setup satellites - composed thing
-    composedSatellite = Satellite();
+    composedSatellite = Satellite({position:{x:50,y:50}, size:{height:20, width:20}});
 
     for (var i = 0; i < 16 ; i++){  // rows
         satellites.push(Object.create(satellite));

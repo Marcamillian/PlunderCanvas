@@ -27,11 +27,11 @@ var probe = {
 
 // testing composed objects
 
-const Satellite = function Satellite(){
+const Satellite = function Satellite(arguments){ 
     state = {
         colour: "#adff00",
-        position: {x:20, y:20},
-        size:{width:10, height:10}
+        position: (arguments === undefined)? {x:20, y:20}: arguments.position,
+        size: (arguments === undefined)? {width:20, height:20}: arguments.size,
     },
     getState = function getState(){
         return state;
