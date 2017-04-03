@@ -7,6 +7,7 @@ var then;
 
 var players = [];
 var satellites = [];
+var compSatellites = [];
 
 // controls tracking
 var keysDown = {};
@@ -67,9 +68,19 @@ function init(){
     composedSatellite = Satellite({position:{x:50,y:50}, size:{height:20, width:20}});
 
     for (var i = 0; i < 16 ; i++){  // rows
+
+        compSatellites.push( Satellite({
+            position:{
+                x:satPositions[i].x + sideGutter,
+                y:satPositions[i].y + topGutter
+            },
+            size:{height:20, width:20}
+        }));
+        
         satellites.push(Object.create(satellite));
         satellites[i].x = satPositions[i].x + sideGutter;
         satellites[i].y = satPositions[i].y + topGutter;
+        
     }
 
     // render the things;
@@ -104,23 +115,20 @@ var update = function update(timeStep){   // update the objects
 var render = function render(canvasContext){
     
     // draw background
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
+    canvasContext.fillStyle = "#000000";
+    canvasContext.fillRect(0,0,canvas.width, canvas.height);
 
     // draw satellites
-    ctx.fillStyle = "#FFFFFF"
-    satellites.forEach(function(drawSat){
-        ctx.fillRect(drawSat.x, drawSat.y, drawSat.width,drawSat.height);
-    });
+    compSatellites.forEach(function(sat){
+        sat.draw();
+    })
 
     // draw the players
-    ctx.fillStyle = "#00ff00"
+    canvasContext.fillStyle = "#00ff00"
     players.forEach(function(drawPlayer){
-        ctx.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
+        canvasContext.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
     })
     
-    // draw composition test
-    composedSatellite.draw(canvasContext);
 
 }
 
@@ -150,8 +158,8 @@ var gridPositions = function gridPositions(spaceWidth, spaceHeight, object){
     // setup satellites
     for (var i = 0; i < 16 ; i++){  // rows
         positions.push(Object.create(satellite));
-        positions[i].x = (spacing_X /2) + i%4 * (spacing_X) - object.width/2;
-        positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y) - object.height/2;
+        positions[i].x = (spacing_X /2) + i%4 * (spacing_X);
+        positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y);
     }
 
     return positions;

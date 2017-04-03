@@ -30,7 +30,7 @@ const renderable = function renderable(state){
             ctx.save()
 
             ctx.fillStyle = "#adff00"; // set the right colour
-            ctx.translate(state.position.x + state.size.width/2, state.position.y + state.size.height/2) // move to the right position
+            ctx.translate(state.position.x - state.size.width/2, state.position.y - state.size.height/2) // move to the right position
             ctx.fillRect(0, 0, state.size.width, state.size.height); // draw the object
 
             ctx.restore()
