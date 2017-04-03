@@ -6,6 +6,7 @@ var height;
 var then;
 
 var players = [];
+var compPlayers = [];
 var satellites = [];
 var compSatellites = [];
 
@@ -56,19 +57,25 @@ function init(){
     satelliteSpacing_Y = satFieldHeight / 4;
     
     // setup players
+    
     for( var i=0; i < 2; i ++){ players.push(Object.create(ship)); }
     players[0].x = canvas.width/2 - ship.width/2;  // player 1
     players[0].y = topGutter/2 - ship.width/2;
     players[1].x = canvas.width/2 - ship.width/2;  // player 2
     players[1].y = canvas.height - topGutter/2 -ship.height;
 
-    satPositions = gridPositions(satFieldWidth, satFieldHeight, satellite);
 
-    // setup satellites - composed thing
-    composedSatellite = Satellite({position:{x:50,y:50}, size:{height:20, width:20}});
+    compPlayers.push(Ship({
+        position:{ x: 100, y: 100}
+    }));
+    compPlayers.push(Ship({
+        position:{x: 200, y: 200}
+    }))
 
-    for (var i = 0; i < 16 ; i++){  // rows
+    // setup satellites
+    satPositions = gridPositions(satFieldWidth, satFieldHeight); // get the spacing for the satellites
 
+    for (var i = 0; i < 16 ; i++){
         compSatellites.push( Satellite({
             position:{
                 x:satPositions[i].x + sideGutter,
@@ -76,11 +83,6 @@ function init(){
             },
             size:{height:20, width:20}
         }));
-        
-        satellites.push(Object.create(satellite));
-        satellites[i].x = satPositions[i].x + sideGutter;
-        satellites[i].y = satPositions[i].y + topGutter;
-        
     }
 
     // render the things;
@@ -120,7 +122,7 @@ var render = function render(canvasContext){
 
     // draw satellites
     compSatellites.forEach(function(sat){
-        sat.draw();
+        sat.draw(canvasContext);
     })
 
     // draw the players
@@ -128,7 +130,11 @@ var render = function render(canvasContext){
     players.forEach(function(drawPlayer){
         canvasContext.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
     })
-    
+
+    // updated players using composition
+    compPlayers.forEach(function(drawPlayer){  // TODO: the composed player is not drawing apparently
+        drawPlayer.draw(canvasContext);
+    })
 
 }
 
@@ -148,7 +154,7 @@ var mainLoop = function mainLoop(){
 
 
 // helper FUNCTIONS
-var gridPositions = function gridPositions(spaceWidth, spaceHeight, object){
+var gridPositions = function gridPositions(spaceWidth, spaceHeight){
 
     // setting out a 4x4 grid
     var spacing_X = spaceWidth / 4;
@@ -157,7 +163,7 @@ var gridPositions = function gridPositions(spaceWidth, spaceHeight, object){
 
     // setup satellites
     for (var i = 0; i < 16 ; i++){  // rows
-        positions.push(Object.create(satellite));
+        positions.push({});
         positions[i].x = (spacing_X /2) + i%4 * (spacing_X);
         positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y);
     }
