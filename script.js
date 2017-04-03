@@ -39,6 +39,15 @@ function init(){
     canvas.height = 600;
     document.body.appendChild(canvas);
 
+    // event listeners for canvas element
+    canvas.addEventListener("mousedown", function(e){
+        keysDown["click"] = e;
+    });
+
+    canvas.addEventListener("mouseup",function(){
+        delete keysDown["click"];
+    })
+
     // satellite field size
     satFieldWidth = canvas.width - 2*sideGutter;
     satFieldHeight = canvas.height - 2*topGutter;
@@ -54,7 +63,9 @@ function init(){
 
     satPositions = gridPositions(satFieldWidth, satFieldHeight, satellite);
 
-    // setup satellites
+    // setup satellites - composed thing
+    composedSatellite = Satellite();
+
     for (var i = 0; i < 16 ; i++){  // rows
         satellites.push(Object.create(satellite));
         satellites[i].x = satPositions[i].x + sideGutter;
@@ -62,7 +73,7 @@ function init(){
     }
 
     // render the things;
-    render();
+    render(ctx);
 
     // kick off the main loop
     then = Date.now();
@@ -79,12 +90,18 @@ var update = function update(timeStep){   // update the objects
 
     // movement
 
+    // ship rotation
+    if(keysDown["click"]){
+
+    }
+
     // collision
+
 
 }
 
 // render the scene
-var render = function render(){
+var render = function render(canvasContext){
     
     // draw background
     ctx.fillStyle = "#000000";
@@ -101,6 +118,9 @@ var render = function render(){
     players.forEach(function(drawPlayer){
         ctx.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
     })
+    
+    // draw composition test
+    composedSatellite.draw(canvasContext);
 
 }
 
@@ -110,7 +130,7 @@ var mainLoop = function mainLoop(){
     var delta = now - then;
 
     update( delta/1000 );
-    render();
+    render(ctx);
 
     then = now;
 

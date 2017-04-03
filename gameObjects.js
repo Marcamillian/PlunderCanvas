@@ -1,7 +1,7 @@
 // game objects
 var ship = {
     name:"playerOne",
-    direction:0,
+    direction:0, // radia
     x:0,
     y:0,
 }.prototype = {
@@ -24,3 +24,22 @@ var probe = {
 }.prototype = {
     speed:10
 }
+
+// testing composed objects
+
+const Satellite = function Satellite(){
+    state = {
+        colour: "#adff00",
+        position: {x:20, y:20},
+        size:{width:10, height:10}
+    },
+    getState = function getState(){
+        return state;
+    }
+    return Object.assign(
+        {getState:getState}, // start Object
+        renderable(state) // behaviours
+    )
+}
+
+
