@@ -29,7 +29,7 @@ function init(){
     var satelliteSpacing_X;
     var satelliteSpacing_Y;
     var satPositions;
-    var topGutter = 40;
+    var topGutter = 50;
     var sideGutter = 0;
     var satFieldWidth;
     var satFieldHeight;
@@ -65,11 +65,11 @@ function init(){
     players[1].y = canvas.height - topGutter/2 -ship.height;
 
 
-    compPlayers.push(Ship({
-        position:{ x: 100, y: 100}
+    compPlayers.push(Ship({ // player 1
+        position:{ x: canvas.width/2, y: topGutter/2}
     }));
-    compPlayers.push(Ship({
-        position:{x: 200, y: 200}
+    compPlayers.push(Ship({ // player 2
+        position:{x: canvas.width/2, y: canvas.height - topGutter/2}
     }))
 
     // setup satellites
@@ -126,10 +126,11 @@ var render = function render(canvasContext){
     })
 
     // draw the players
+    /*
     canvasContext.fillStyle = "#00ff00"
     players.forEach(function(drawPlayer){
         canvasContext.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
-    })
+    })*/
 
     // updated players using composition
     compPlayers.forEach(function(drawPlayer){  // TODO: the composed player is not drawing apparently

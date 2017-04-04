@@ -46,7 +46,7 @@ const Ship = function Ship(arguments){
     state = {
         colour: "#FFFFFF",
         position: (arguments === undefined)? {x:10, y:10}: arguments.position,
-        size:(arguments===undefined)?{width:20,height:40}: arguments.position
+        size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     },
     getState = function getState(){ return state}
     return Object.assign(
