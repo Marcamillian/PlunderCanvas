@@ -5,10 +5,10 @@ var height;
 
 var then;
 
-var players = [];
 var compPlayers = [];
 var satellites = [];
 var compSatellites = [];
+var clickMarker = {};
 
 // controls tracking
 var keysDown = {};
@@ -57,14 +57,6 @@ function init(){
     satelliteSpacing_Y = satFieldHeight / 4;
     
     // setup players
-    
-    for( var i=0; i < 2; i ++){ players.push(Object.create(ship)); }
-    players[0].x = canvas.width/2 - ship.width/2;  // player 1
-    players[0].y = topGutter/2 - ship.width/2;
-    players[1].x = canvas.width/2 - ship.width/2;  // player 2
-    players[1].y = canvas.height - topGutter/2 -ship.height;
-
-
     compPlayers.push(Ship({ // player 1
         position:{ x: canvas.width/2, y: topGutter/2}
     }));
@@ -85,6 +77,9 @@ function init(){
         }));
     }
 
+    // set up the click marker
+    clickMarker = ClickMarker();
+
     // render the things;
     render(ctx);
 
@@ -103,8 +98,29 @@ var update = function update(timeStep){   // update the objects
 
     // movement
 
-    // ship rotation
+    // satellite click
+
+
+    // on a click
     if(keysDown["click"]){
+
+        // move the click marker
+        clickMarker.moveTo({    x: keysDown["click"].offsetX ,
+                                y: keysDown["click"].offsetY
+        })
+
+        // rotate the ship
+        compPlayers[0].rotateToFace({   x: keysDown["click"].offsetX ,
+                                        y: keysDown["click"].offsetY
+        })
+
+        // check satellite click
+        compSatellites.forEach( function(sat){
+            sat.runClick( { x: keysDown["click"].offsetX ,
+                            y: keysDown["click"].offsetY   },
+                        function(state){ state.colour = "#ff0000"}
+            )
+        });
 
     }
 
@@ -125,17 +141,13 @@ var render = function render(canvasContext){
         sat.draw(canvasContext);
     })
 
-    // draw the players
-    /*
-    canvasContext.fillStyle = "#00ff00"
-    players.forEach(function(drawPlayer){
-        canvasContext.fillRect(drawPlayer.x, drawPlayer.y,drawPlayer.width, drawPlayer.height);
-    })*/
-
     // updated players using composition
     compPlayers.forEach(function(drawPlayer){  // TODO: the composed player is not drawing apparently
         drawPlayer.draw(canvasContext);
     })
+
+    // render click marker
+    clickMarker.draw(canvasContext)
 
 }
 
