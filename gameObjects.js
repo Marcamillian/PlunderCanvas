@@ -1,22 +1,3 @@
-// game objects
-var ship = {
-    name:"playerOne",
-    direction:0, // radia
-    x:0,
-    y:0,
-}.prototype = {
-    width:20,
-    height:40
-}
-
-var satellite = {
-    x:0,
-    y:0,
-    store:{playerOne:0, playerTwo:0}
-}.prototype = {
-    width:20,
-    height:20
-}
 
 var probe = {
     x:0,
@@ -25,25 +6,31 @@ var probe = {
     speed:10
 }
 
-// testing composed objects
-
+// SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
     state = {
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
         rotation:0, // in degrees
-        size: (arguments === undefined)? {width:20, height:20}: arguments.size,
+        size: (arguments === undefined)? {width:20, height:20}: arguments.size
     },
     getState = function getState(){
         return state;
+    },
+    clickFunction = function clickFunction(state){
+        state.colour = "#ff0000"
+    },
+    additionalRender = function additionalRender(canvasContext){
+        
     }
     return Object.assign(
         {getState:getState}, // start Object
-        renderable(state), // behaviours
-        reactToClick(state)
+        renderable(state, [additionalRender]), // behaviours
+        reactToClick(state, clickFunction)
     )
 }
 
+// SHIP OBJECT
 const Ship = function Ship(arguments){
     state = {
         colour: "#FFFFFF",
@@ -59,6 +46,7 @@ const Ship = function Ship(arguments){
     )
 }
 
+// OBJECT FOR WHERE YOU CLICK 
 const ClickMarker = function ClickMarker(){
     state = {
         colour: '#ff69b4',

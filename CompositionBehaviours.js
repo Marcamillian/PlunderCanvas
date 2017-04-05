@@ -24,17 +24,24 @@ if (typeof Object.assign != 'function') {
   };
 }
 
-const renderable = function renderable(state){
+const renderable = function renderable(state, additionalRender){
     return{
         draw: function draw(canvasContext){ // tick time = time between frames in miliseconds
-            ctx.save()
+            canvasContext.save()
 
-            ctx.fillStyle = state.colour; // set the right colour
-            ctx.translate(state.position.x , state.position.y) // move to the right position
-            ctx.rotate( state.rotation * (Math.PI/180) );
-            ctx.translate(- state.size.width/2, - state.size.height/2) // move to top left of object
-            ctx.fillRect(0, 0, state.size.width, state.size.height); // draw the object
-            ctx.restore()
+            canvasContext.fillStyle = state.colour; // set the right colour
+            canvasContext.translate(state.position.x , state.position.y) // move to the right position
+            canvasContext.rotate( state.rotation * (Math.PI/180) );
+            canvasContext.translate(- state.size.width/2, - state.size.height/2) // move to top left of object
+            canvasContext.fillRect(0, 0, state.size.width, state.size.height); // draw the object
+            canvasContext.translate( state.size.width/2, state.size.height);
+
+            if (additionalRender){
+              additionalRender.forEach(function(renderFunction){ renderFunction(canvasContext) })
+            }
+
+            canvasContext.restore()
+            
         }
     }
 }
@@ -60,9 +67,9 @@ const moveToClick = function moveToClick(state){
   }
 }
 
-const reactToClick = function reactToClick(state){
+const reactToClick = function reactToClick(state, clickFunction){
   return{
-    runClick: function runClick(clickPosition,clickFunction){
+    runClick: function runClick(clickPosition){
       if( clickPosition.x < state.position.x - state.size.width/2
             || clickPosition.x > state.position.x + state.size.width/2){
               return

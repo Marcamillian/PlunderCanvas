@@ -104,22 +104,18 @@ var update = function update(timeStep){   // update the objects
     // on a click
     if(keysDown["click"]){
 
+        var clickPos = {    x: keysDown["click"].offsetX,
+                            y: keysDown["click"].offsetY}
+
         // move the click marker
-        clickMarker.moveTo({    x: keysDown["click"].offsetX ,
-                                y: keysDown["click"].offsetY
-        })
+        clickMarker.moveTo({ x: clickPos.x , y: clickPos.y})
 
         // rotate the ship
-        compPlayers[0].rotateToFace({   x: keysDown["click"].offsetX ,
-                                        y: keysDown["click"].offsetY
-        })
+        compPlayers[0].rotateToFace({ x: clickPos.x, y: clickPos.y})
 
         // check satellite click
         compSatellites.forEach( function(sat){
-            sat.runClick( { x: keysDown["click"].offsetX ,
-                            y: keysDown["click"].offsetY   },
-                        function(state){ state.colour = "#ff0000"}
-            )
+            sat.runClick( { x:clickPos.x , y:clickPos.y })
         });
 
     }
