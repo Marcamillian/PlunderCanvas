@@ -145,7 +145,7 @@ var render = function render(canvasContext){
     })
 
     // render click marker
-    clickMarker.draw(canvasContext)
+    //clickMarker.draw(canvasContext)
 
 }
 

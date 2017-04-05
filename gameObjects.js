@@ -19,7 +19,6 @@ const Satellite = function Satellite(arguments){
         return state;
     },
     clickFunction = function clickFunction(state){
-        state.colour = "#ff0000";
         state.loot.player1 += 1;
     },
     renderScore = function renderScore(canvasContext, state){
