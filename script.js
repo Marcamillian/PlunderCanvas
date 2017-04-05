@@ -118,6 +118,8 @@ var update = function update(timeStep){   // update the objects
             sat.runClick( { x:clickPos.x , y:clickPos.y })
         });
 
+        delete keysDown["click"];
+
     }
 
     // collision
