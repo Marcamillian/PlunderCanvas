@@ -34,10 +34,11 @@ const renderable = function renderable(state, additionalRender){
             canvasContext.rotate( state.rotation * (Math.PI/180) );
             canvasContext.translate(- state.size.width/2, - state.size.height/2) // move to top left of object
             canvasContext.fillRect(0, 0, state.size.width, state.size.height); // draw the object
-            canvasContext.translate( state.size.width/2, state.size.height);
+            canvasContext.translate( state.size.width/2, state.size.height); // move back to middle
 
+            // make additional render steps if necessary
             if (additionalRender){
-              additionalRender.forEach(function(renderFunction){ renderFunction(canvasContext) })
+              additionalRender.forEach(function(renderFunction){ renderFunction(canvasContext, state) })
             }
 
             canvasContext.restore()

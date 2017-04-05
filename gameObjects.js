@@ -12,20 +12,27 @@ const Satellite = function Satellite(arguments){
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
         rotation:0, // in degrees
-        size: (arguments === undefined)? {width:20, height:20}: arguments.size
+        size: (arguments === undefined)? {width:20, height:20}: arguments.size,
+        loot:{ player1:0, player2:0}
     },
     getState = function getState(){
         return state;
     },
     clickFunction = function clickFunction(state){
-        state.colour = "#ff0000"
+        state.colour = "#ff0000";
+        state.loot.player1 += 1;
     },
-    additionalRender = function additionalRender(canvasContext){
+    renderScore = function renderScore(canvasContext, state){
+        canvasContext.save();
         
+        canvasContext.fillStyle = "#000000";
+        canvasContext.translate(-4, -7);
+        canvasContext.fillText(state.loot.player1, 0 , 0)
+        canvasContext.restore();
     }
     return Object.assign(
         {getState:getState}, // start Object
-        renderable(state, [additionalRender]), // behaviours
+        renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction)
     )
 }
