@@ -24,6 +24,14 @@ if (typeof Object.assign != 'function') {
   };
 }
 
+const stateReporter = function stateReporter(state){
+  return{
+    getState: function getState(){
+      return state;
+    }
+  }
+}
+
 const renderable = function renderable(state, additionalRender){
     return{
         draw: function draw(canvasContext){ // tick time = time between frames in miliseconds
@@ -83,6 +91,18 @@ const reactToClick = function reactToClick(state, clickFunction){
       // if doesn't exit - do the thing
       clickFunction(state);
 
+    }
+  }
+}
+
+const mover = function mover(state){
+  return {
+    move: function move(timeDelta){
+      state.position.x += state.speed*timeDelta;
+      state.position.y += state.speed*timeDelta;
+    },
+    isActive: function isActive(){
+      return state.active
     }
   }
 }

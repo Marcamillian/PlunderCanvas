@@ -9,6 +9,7 @@ var compPlayers = [];
 var satellites = [];
 var compSatellites = [];
 var clickMarker = {};
+var probe = {};
 
 // controls tracking
 var keysDown = {};
@@ -80,6 +81,10 @@ function init(){
     // set up the click marker
     clickMarker = ClickMarker();
 
+    // set up the probe 
+    probe = Probe();
+    fireButton = FireButton(probe);
+
     // render the things;
     render(ctx);
 
@@ -97,6 +102,7 @@ var reset = function reset(){         // reset the game
 var update = function update(timeStep){   // update the objects
 
     // movement
+    if(probe.isActive()){ console.log("probe moving") }
 
     // satellite click
 
@@ -108,15 +114,17 @@ var update = function update(timeStep){   // update the objects
                             y: keysDown["click"].offsetY}
 
         // move the click marker
-        clickMarker.moveTo({ x: clickPos.x , y: clickPos.y})
+        clickMarker.moveTo(clickPos)
 
         // rotate the ship
-        compPlayers[0].rotateToFace({ x: clickPos.x, y: clickPos.y})
+        compPlayers[0].rotateToFace(clickPos)
 
         // check satellite click
         compSatellites.forEach( function(sat){
-            sat.runClick( { x:clickPos.x , y:clickPos.y })
+            sat.runClick( clickPos )
         });
+
+        fireButton.runClick( clickPos )
 
         delete keysDown["click"];
 
@@ -146,6 +154,9 @@ var render = function render(canvasContext){
 
     // render click marker
     //clickMarker.draw(canvasContext)
+    probe.draw(canvasContext);
+    fireButton.draw(canvasContext);
+
 
 }
 
