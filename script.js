@@ -192,3 +192,16 @@ var gridPositions = function gridPositions(spaceWidth, spaceHeight){
 
     return positions;
 }
+
+
+// TODO: get the gravity change for a given probe position
+var calcGravity = function calcGravity(position, spaceWidth, spaceHeight){  // {x:Number, y : Number}
+    // <--[input] position of the probe
+    // [output] --> speed change as a vector
+
+    // calc which satellites are active
+    // x gridspace
+
+    // y gridspace
+
+}

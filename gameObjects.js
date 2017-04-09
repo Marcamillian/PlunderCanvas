@@ -85,7 +85,6 @@ const Probe = function Probe(){
 
 const FireButton = function FireButton(targetObject){
     state = {
-        name:'fireButton',
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
@@ -98,4 +97,29 @@ const FireButton = function FireButton(targetObject){
         renderable(state),
         reactToClick(state, clickFunction)
     )
+}
+
+const GameArea = function GameArea(canvasWidth, canvasHeight){
+    state = {
+        gutters: {top:50, side:0},
+        satelliteSpacing: {x:undefined, y: undefined},
+        satFieldSize: {width:canvasWidth, height:canvasHeight}
+    },
+    gridPositions = function gridPositions(){
+        var spacing_X = spaceWidth / 4;
+        var spacing_Y = spaceHeight / 4;
+        var positions = [];
+
+        // setup satellites
+        for (var i = 0; i < 16 ; i++){  // rows
+            positions.push({});
+            positions[i].x = (spacing_X /2) + i%4 * (spacing_X);
+            positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y);
+        }
+
+        return positions/*.map(function(position){
+            position.x += gutters.side; // adding on the surrounding area
+            position.y += gutters.top;
+        });*/
+    }
 }
