@@ -70,7 +70,7 @@ const Probe = function Probe(){
         position: { x:20 , y:20 },
         size: {width: 10, height:10},
         active: false,
-        speed:1
+        speed:{x:0, y:25}
     },
     trigger = function trigger(givenState){ // TODO: state getting passed here doesnt have speed on
         givenState.active = true;

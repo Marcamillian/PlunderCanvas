@@ -102,7 +102,7 @@ var reset = function reset(){         // reset the game
 var update = function update(timeStep){   // update the objects
 
     // movement
-    if(probe.isActive()){ console.log("probe moving") }
+    if(probe.isActive()){ probe.move(timeStep) }
 
     // satellite click
 

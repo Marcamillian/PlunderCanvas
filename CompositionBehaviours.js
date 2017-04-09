@@ -98,8 +98,8 @@ const reactToClick = function reactToClick(state, clickFunction){
 const mover = function mover(state){
   return {
     move: function move(timeDelta){
-      state.position.x += state.speed*timeDelta;
-      state.position.y += state.speed*timeDelta;
+      state.position.x += state.speed.x * timeDelta;
+      state.position.y += state.speed.y * timeDelta;
     },
     isActive: function isActive(){
       return state.active
