@@ -126,8 +126,29 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
             }
         });
     }
+    var calcGravity = function calcGravity(position){
+
+        var satForces = {};
+        var column = Math.floor( ( (position.x - state.gutters.side) / state.satelliteSpacing.x) -0.5) + 1 ;
+        var row = Math.floor( ( (position.y - state.gutters.top) / state.satelliteSpacing.y) -0.5 ) + 1;
+        //console.log( "click position   ", column,  " : ",row)
+        
+        console.log("grid square: ", row*5 + column); // calculate the grid square the probe is in
+
+        if( column < 1 ){ satForces.right = true;
+        }else if(column > 3){satForces.left = true
+        }else{ satForces.right = true, satForces.left = true}
+
+        if( row < 1 ){ satForces.bottom = true;
+        }else if(row > 3){satForces.top = true
+        }else{ satForces.top = true, satForces.bottom = true}
+
+        //console.log(satForces)
+
+    }
     return Object.assign(
-        {gridPositions: gridPositions},
+        {gridPositions: gridPositions,
+        calcGravity:calcGravity},
         stateReporter(state)
     )
 }

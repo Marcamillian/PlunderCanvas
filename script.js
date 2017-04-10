@@ -127,6 +127,8 @@ var update = function update(timeStep){   // update the objects
             sat.runClick( clickPos )
         });
 
+        gameArea.calcGravity(clickPos);
+
         fireButton.runClick( clickPos )
 
         delete keysDown["click"];
@@ -179,23 +181,6 @@ var mainLoop = function mainLoop(){
 
 
 // helper FUNCTIONS
-var gridPositions = function gridPositions(spaceWidth, spaceHeight){
-
-    // setting out a 4x4 grid
-    var spacing_X = spaceWidth / 4;
-    var spacing_Y = spaceHeight / 4;
-    var positions = [];
-
-    // setup satellites
-    for (var i = 0; i < 16 ; i++){  // rows
-        positions.push({});
-        positions[i].x = (spacing_X /2) + i%4 * (spacing_X);
-        positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y);
-    }
-
-    return positions;
-}
-
 
 // TODO: get the gravity change for a given probe position
 var calcGravity = function calcGravity(position, spaceWidth, spaceHeight){  // {x:Number, y : Number}
