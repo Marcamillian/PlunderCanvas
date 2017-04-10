@@ -127,7 +127,7 @@ var update = function update(timeStep){   // update the objects
             sat.runClick( clickPos )
         });
 
-        gameArea.calcGravity(clickPos);
+        console.log(gameArea.activeSatellites(clickPos));
 
         fireButton.runClick( clickPos )
 

@@ -126,8 +126,9 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
             }
         });
     }
-    var calcGravity = function calcGravity(position){
+    var activeSatellites = function calcGravity(position){
 
+        var sats = []
         var satForces = {};
         var column = Math.floor( ( (position.x - state.gutters.side) / state.satelliteSpacing.x) -0.5) + 1 ;
         var row = Math.floor( ( (position.y - state.gutters.top) / state.satelliteSpacing.y) -0.5 ) + 1;
@@ -143,12 +144,20 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         }else if(row > 3){satForces.top = true
         }else{ satForces.top = true, satForces.bottom = true}
 
-        //console.log(satForces)
-
+        if(satForces.right){
+            if (satForces.top){ sats.push( ((row-1) *4) + column )}
+            if (satForces.bottom){sats.push( (row * 4)  + column )}
+        }
+        if(satForces.left){
+            if(satForces.top){ sats.push( (row-1)*4 + (column-1) ) }
+            if(satForces.bottom){ sats.push( row*4 + (column-1) ) }
+        }
+        
+        return sats; // array of the nodes that will affect the probe
     }
     return Object.assign(
         {gridPositions: gridPositions,
-        calcGravity:calcGravity},
+        activeSatellites:activeSatellites},
         stateReporter(state)
     )
 }
