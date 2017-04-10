@@ -26,8 +26,11 @@ const Satellite = function Satellite(arguments){
         canvasContext.fillText(state.loot.player1, 0 , 0)
         canvasContext.restore();
     }
+    var setActive = function setActive(isActive){
+        if(isActive){ state.colour = "#ff69b4" } else { state.colour = "#adff00" }
+    }
     return Object.assign(
-        {}, // start Object
+        {setActive: setActive}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -134,7 +137,7 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         var row = Math.floor( ( (position.y - state.gutters.top) / state.satelliteSpacing.y) -0.5 ) + 1;
         //console.log( "click position   ", column,  " : ",row)
         
-        console.log("grid square: ", row*5 + column); // calculate the grid square the probe is in
+        //console.log("grid square: ", row*5 + column); // calculate the grid square the probe is in
 
         if( column < 1 ){ satForces.right = true;
         }else if(column > 3){satForces.left = true

@@ -113,6 +113,8 @@ var update = function update(timeStep){   // update the objects
     // on a click
     if(keysDown["click"]){
 
+        var activeSats = [];
+
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
 
@@ -127,7 +129,14 @@ var update = function update(timeStep){   // update the objects
             sat.runClick( clickPos )
         });
 
-        console.log(gameArea.activeSatellites(clickPos));
+        // PROBE MOVEMENT UPDATE FORCES
+        activeSats = gameArea.activeSatellites(clickPos); // decide which are active
+        compSatellites.forEach(function(sat){ // reset everything to not active
+            sat.setActive(false)
+        });
+        activeSats.forEach(function(satIndex){      // make the right ones active
+            compSatellites[satIndex].setActive(true);
+        });
 
         fireButton.runClick( clickPos )
 
