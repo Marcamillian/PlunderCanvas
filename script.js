@@ -104,11 +104,31 @@ var reset = function reset(){         // reset the game
 
 var update = function update(timeStep){   // update the objects
 
-    // movement
-    if(probe.isActive()){ probe.move(timeStep) }
+    // probe movement && force update
+    if(probe.isActive()){
 
-    // satellite click
+        var probePos = probe.getPos()
+        var appliedForce = {x:0, y:0};
 
+        // force update
+        activeSats = gameArea.activeSatellites(probePos); // decide which are active
+        
+        compSatellites.forEach(function(sat){ // reset everything to not active
+            sat.setActive(false)
+        });
+        
+        activeSats.forEach(function(satIndex){      // make the right ones active
+            compSatellites[satIndex].setActive(true);
+            var thisForce =  compSatellites[satIndex].exertForce(probePos);
+            appliedForce.x += thisForce.x;
+            appliedForce.y += thisForce.y;
+        });
+
+        probe.applyForce(appliedForce);
+
+        // move if in bounds
+        if(gameArea.inBounds(probePos)){probe.move(timeStep)};
+    }
 
     // on a click
     if(keysDown["click"]){
@@ -127,15 +147,6 @@ var update = function update(timeStep){   // update the objects
         // check satellite click
         compSatellites.forEach( function(sat){
             sat.runClick( clickPos )
-        });
-
-        // PROBE MOVEMENT UPDATE FORCES
-        activeSats = gameArea.activeSatellites(clickPos); // decide which are active
-        compSatellites.forEach(function(sat){ // reset everything to not active
-            sat.setActive(false)
-        });
-        activeSats.forEach(function(satIndex){      // make the right ones active
-            compSatellites[satIndex].setActive(true);
         });
 
         fireButton.runClick( clickPos )

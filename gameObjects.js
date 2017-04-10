@@ -29,8 +29,21 @@ const Satellite = function Satellite(arguments){
     var setActive = function setActive(isActive){
         if(isActive){ state.colour = "#ff69b4" } else { state.colour = "#adff00" }
     }
+    var exertForce = function extertForce(targetPosition){
+        var distance_X= state.position.x - targetPosition.x;
+        var distance_Y= state.position.y - targetPosition.y;
+
+        return { // TODO: figure out the right values for this
+                x: 2/distance_X * totalLoot(),
+                y: 2/distance_Y * totalLoot()
+            }
+    }
+    var totalLoot = function totalLoot(){
+        return state.loot.player1 + state.loot.player2;
+    }
     return Object.assign(
-        {setActive: setActive}, // start Object
+        {setActive: setActive,
+        exertForce: exertForce}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -70,7 +83,7 @@ const ClickMarker = function ClickMarker(){
 const Probe = function Probe(){
     var state = {
         colour: '#ff69b4',
-        position: { x:20 , y:20 },
+        position: { x:200 , y:20 },
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:25}
@@ -78,8 +91,17 @@ const Probe = function Probe(){
     var trigger = function trigger(givenState){
         givenState.active = true;
     }
+    var getPos= function getPos(){
+        return state.position;
+    }
+    var applyForce = function applyForce(forceVector){
+        state.speed.x += Math.max(-100, Math.min( forceVector.x, 100));
+        state.speed.y += Math.max(-100, Math.min( forceVector.y, 100))
+    }
     return Object.assign(
-        {trigger:trigger},
+        {trigger:trigger,
+        getPos:getPos,
+        applyForce: applyForce},
         renderable(state),
         stateReporter(state),
         mover(state)
@@ -107,6 +129,13 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
         satFieldSize: {width:canvasWidth, height:canvasHeight}
+    }
+    var inBounds = function(position){
+        return (position.x > 5 && position.x < state.satFieldSize.width -5
+                && position.y > 5 && position.y < state.satFieldSize.height - 5) ? true : false
+    }
+    var getFieldSize = function getFieldSize(){
+        return state.satFieldSize;
     }
     var gridPositions = function gridPositions(){
         
@@ -160,7 +189,9 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
     }
     return Object.assign(
         {gridPositions: gridPositions,
-        activeSatellites:activeSatellites},
+        activeSatellites:activeSatellites,
+        getFieldSize:getFieldSize,
+        inBounds: inBounds},
         stateReporter(state)
     )
 }
