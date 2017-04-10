@@ -3,13 +3,13 @@ var ctx;
 var width;
 var height;
 
-var then;
+var then; // date() of previous frame 
 
-var compPlayers = [];
-var satellites = [];
-var compSatellites = [];
-var clickMarker = {};
-var probe = {};
+var gameArea = {}; // object to contain the state of the play field and untility functions
+var compPlayers = []; // array of players
+var compSatellites = [];   // array of satellites
+var clickMarker = {};   // object for tracking the previous click of the mouse
+var probe = {}; // probe that is affected by gravity
 
 // controls tracking
 var keysDown = {};
@@ -51,6 +51,9 @@ function init(){
         delete keysDown["click"];
     })
 
+    // create the gameArea object for controlling game area
+    gameArea = GameArea(400, 600);
+
     // satellite field size
     satFieldWidth = canvas.width - 2*sideGutter;
     satFieldHeight = canvas.height - 2*topGutter;
@@ -65,15 +68,15 @@ function init(){
         position:{x: canvas.width/2, y: canvas.height - topGutter/2}
     }))
 
-    // setup satellites
-    satPositions = gridPositions(satFieldWidth, satFieldHeight); // get the spacing for the satellites
+    // ===  setup satellites === 
 
+    // get positions
+    satPositions = gameArea.gridPositions();
+
+    // make the satellites
     for (var i = 0; i < 16 ; i++){
         compSatellites.push( Satellite({
-            position:{
-                x:satPositions[i].x + sideGutter,
-                y:satPositions[i].y + topGutter
-            },
+            position: satPositions[i],
             size:{height:20, width:20}
         }));
     }
@@ -148,7 +151,7 @@ var render = function render(canvasContext){
     })
 
     // updated players using composition
-    compPlayers.forEach(function(drawPlayer){  // TODO: the composed player is not drawing apparently
+    compPlayers.forEach(function(drawPlayer){
         drawPlayer.draw(canvasContext);
     })
 

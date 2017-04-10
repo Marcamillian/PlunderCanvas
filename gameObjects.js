@@ -8,17 +8,17 @@ var probe = {
 
 // SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
-    state = {
+    var state = {
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
         rotation:0, // in degrees
         size: (arguments === undefined)? {width:20, height:20}: arguments.size,
         loot:{ player1:0, player2:0}
-    },
-    clickFunction = function clickFunction(state){
+    }
+    var clickFunction = function clickFunction(state){
         state.loot.player1 += 1;
-    },
-    renderScore = function renderScore(canvasContext, state){
+    }
+    var renderScore = function renderScore(canvasContext, state){
         canvasContext.save();
         
         canvasContext.fillStyle = "#000000";
@@ -36,7 +36,7 @@ const Satellite = function Satellite(arguments){
 
 // SHIP OBJECT
 const Ship = function Ship(arguments){
-    state = {
+    var state = {
         colour: "#FFFFFF",
         position: (arguments === undefined)? {x:10, y:10}: arguments.position,
         rotation:15, // in degrees
@@ -52,7 +52,7 @@ const Ship = function Ship(arguments){
 
 // OBJECT FOR WHERE YOU CLICK 
 const ClickMarker = function ClickMarker(){
-    state = {
+    var state = {
         colour: '#ff69b4',
         position: { x:20, y:20},
         size: {width:10, height:10}
@@ -65,14 +65,14 @@ const ClickMarker = function ClickMarker(){
 }
 
 const Probe = function Probe(){
-    state = {
+    var state = {
         colour: '#ff69b4',
         position: { x:20 , y:20 },
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:25}
-    },
-    trigger = function trigger(givenState){ // TODO: state getting passed here doesnt have speed on
+    }
+    var trigger = function trigger(givenState){
         givenState.active = true;
     }
     return Object.assign(
@@ -84,12 +84,12 @@ const Probe = function Probe(){
 }
 
 const FireButton = function FireButton(targetObject){
-    state = {
+    var state = {
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
-    },
-    clickFunction = function clickFunction(){
+    }
+    var clickFunction = function clickFunction(){
         targetObject.trigger(targetObject.getState()); // HACKY WAY ROUND THE CLOSURE
     }
     return Object.assign(
@@ -99,27 +99,35 @@ const FireButton = function FireButton(targetObject){
     )
 }
 
-const GameArea = function GameArea(canvasWidth, canvasHeight){
-    state = {
+const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
+    var state = {
         gutters: {top:50, side:0},
-        satelliteSpacing: {x:undefined, y: undefined},
+        satelliteSpacing: {x:0,y:0},
         satFieldSize: {width:canvasWidth, height:canvasHeight}
-    },
-    gridPositions = function gridPositions(){
-        var spacing_X = spaceWidth / 4;
-        var spacing_Y = spaceHeight / 4;
+    }
+    var gridPositions = function gridPositions(){
+        
         var positions = [];
-
+        state.satelliteSpacing.x = (state.satFieldSize.width - (2*state.gutters.side)) / 4;
+        state.satelliteSpacing.y = (state.satFieldSize.height - (2*state.gutters.top)) / 4;
+        
+        
         // setup satellites
         for (var i = 0; i < 16 ; i++){  // rows
             positions.push({});
-            positions[i].x = (spacing_X /2) + i%4 * (spacing_X);
-            positions[i].y = (spacing_Y /2)+ Math.floor(i/4)*(spacing_Y);
+            positions[i].x = (state.satelliteSpacing.x /2) + i%4 * (state.satelliteSpacing.x);
+            positions[i].y = (state.satelliteSpacing.y /2)+ Math.floor(i/4)*(state.satelliteSpacing.y);
         }
 
-        return positions/*.map(function(position){
-            position.x += gutters.side; // adding on the surrounding area
-            position.y += gutters.top;
-        });*/
+        return positions.map(function(position){
+            return {
+                x: position.x + state.gutters.side, // adding on the surrounding area
+                y: position.y + state.gutters.top
+            }
+        });
     }
+    return Object.assign(
+        {gridPositions: gridPositions},
+        stateReporter(state)
+    )
 }
