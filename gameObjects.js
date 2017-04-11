@@ -63,8 +63,9 @@ const Ship = function Ship(arguments){
         rotation:15, // in degrees
         size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     }
+    var getAngle = function getAngle(){ return state.rotation}
     return Object.assign(
-        {},
+        {getAngle: getAngle},
         renderable(state),
         turnToClick(state),
         stateReporter(state)
@@ -94,7 +95,8 @@ const Probe = function Probe(){
         active: false,
         speed:{x:0, y:defaultSpeed}
     }
-    var trigger = function trigger(givenState){
+    var trigger = function trigger(givenState, triggerArgs){
+        if (triggerArgs.launchAngle) resolveLaunchAngle(triggerArgs.launchAngle)
         givenState.active = true;
     }
     var getPos= function getPos(){
@@ -112,6 +114,14 @@ const Probe = function Probe(){
     var toggleActive = function toggleActive(){
         state.active = !state.active
     }
+    var resolveLaunchAngle = function resolveLaunchAngle(angle){
+        // angle from vertical
+        console.log(angle);
+        
+        state.speed ={  x: defaultSpeed * Math.cos(angle * ( (2*Math.PI)/180) ),
+                        y: defaultSpeed * Math.sin(angle * ( (2*Math.PI)/180) )
+        }
+    }
     return Object.assign(
         {trigger:trigger,
         getPos:getPos,
@@ -124,14 +134,14 @@ const Probe = function Probe(){
     )
 }
 
-const FireButton = function FireButton(targetObject){
+const FireButton = function FireButton(targetObject, triggerArgs){
     var state = {
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
-    var clickFunction = function clickFunction(){
-        targetObject.trigger(targetObject.getState()); // HACKY WAY ROUND THE CLOSURE
+    var clickFunction = function clickFunction(state, clickArgs){
+        targetObject.trigger(targetObject.getState(), clickArgs); // HACKY WAY ROUND THE CLOSURE
     }
     return Object.assign(
         {},

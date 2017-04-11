@@ -78,18 +78,20 @@ const moveToClick = function moveToClick(state){
 
 const reactToClick = function reactToClick(state, clickFunction){
   return{
-    runClick: function runClick(clickPosition){
+    runClick: function runClick(clickPosition, clickArgs){
       if( clickPosition.x < state.position.x - state.size.width/2
             || clickPosition.x > state.position.x + state.size.width/2){
-              return
+              return false
       }
       if( clickPosition.y < state.position.y - state.size.height/2
             || clickPosition.y > state.position.y + state.size.height){
-              return
+              return false
       }
 
       // if doesn't exit - do the thing
-      clickFunction(state);
+      clickFunction(state,clickArgs);
+
+      return true
 
     }
   }

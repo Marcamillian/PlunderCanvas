@@ -138,8 +138,11 @@ var update = function update(timeStep){   // update the objects
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
 
-        // move the click marker
-        clickMarker.moveTo(clickPos)
+        // see if we are firing the probe - don't to anything else if it is
+        if(fireButton.runClick( clickPos , {launchAngle:compPlayers[0].getAngle()})){
+            delete keysDown["click"]; 
+            return
+        }
 
         // rotate the ship
         compPlayers[0].rotateToFace(clickPos)
@@ -148,8 +151,6 @@ var update = function update(timeStep){   // update the objects
         compSatellites.forEach( function(sat){
             sat.runClick( clickPos )
         });
-
-        fireButton.runClick( clickPos )
 
         delete keysDown["click"];
 
