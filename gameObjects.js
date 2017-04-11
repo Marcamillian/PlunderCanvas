@@ -8,6 +8,7 @@ var probe = {
 
 // SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
+    const gravity = 5;
     var state = {
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
@@ -32,10 +33,14 @@ const Satellite = function Satellite(arguments){
     var exertForce = function extertForce(targetPosition){
         var distance_X= state.position.x - targetPosition.x;
         var distance_Y= state.position.y - targetPosition.y;
+        var hypDistance = Math.sqrt( Math.pow(distance_X,2) + Math.pow(distance_Y, 2) );
+
+        // force applied = Grav * (mass) / d^2
+        var totalForce = (totalLoot() * gravity) / hypDistance ;
 
         return { // TODO: figure out the right values for this
-                x: 2/distance_X * totalLoot(),
-                y: 2/distance_Y * totalLoot()
+                x: (distance_X) ? totalForce * (distance_X/hypDistance) : 0,
+                y: (distance_Y) ? totalForce * (distance_Y/hypDistance) : 0
             }
     }
     var totalLoot = function totalLoot(){
@@ -81,12 +86,13 @@ const ClickMarker = function ClickMarker(){
 }
 
 const Probe = function Probe(){
+    const defaultSpeed = 100;
     var state = {
         colour: '#ff69b4',
         position: { x:200 , y:20 },
         size: {width: 10, height:10},
         active: false,
-        speed:{x:0, y:25}
+        speed:{x:0, y:defaultSpeed}
     }
     var trigger = function trigger(givenState){
         givenState.active = true;
@@ -95,7 +101,8 @@ const Probe = function Probe(){
         return state.position;
     }
     var reset = function reset(){
-        state.position = {x:20, y:20},
+        state.position = {x:200, y:20};
+        state.speed = {x:0,y:defaultSpeed};
         state.active = false;
     }
     var applyForce = function applyForce(forceVector){

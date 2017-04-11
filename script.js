@@ -127,7 +127,7 @@ var update = function update(timeStep){   // update the objects
         probe.applyForce(appliedForce);
 
         // move if in bounds
-        if(gameArea.inBounds(probePos)){probe.move(timeStep)};
+        if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.reset()};
     }
 
     // on a click
@@ -197,19 +197,4 @@ var mainLoop = function mainLoop(){
 
     // request to do this again ASAP
     requestAnimationFrame(mainLoop);
-}
-
-
-// helper FUNCTIONS
-
-// TODO: get the gravity change for a given probe position
-var calcGravity = function calcGravity(position, spaceWidth, spaceHeight){  // {x:Number, y : Number}
-    // <--[input] position of the probe
-    // [output] --> speed change as a vector
-
-    // calc which satellites are active
-    // x gridspace
-
-    // y gridspace
-
 }
