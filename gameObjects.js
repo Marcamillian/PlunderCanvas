@@ -33,9 +33,9 @@ const Satellite = function Satellite(arguments){
         var distance_X= state.position.x - targetPosition.x;
         var distance_Y= state.position.y - targetPosition.y;
 
-        return { // TODO: figure out the right values for this
-                x: 2/distance_X * totalLoot(),
-                y: 2/distance_Y * totalLoot()
+        return { // TODO: figure out the right values for this - make proportional to spacing?
+                x: 5/distance_X * totalLoot(),
+                y: 5/distance_Y * totalLoot()
             }
     }
     var totalLoot = function totalLoot(){
