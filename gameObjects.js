@@ -94,14 +94,23 @@ const Probe = function Probe(){
     var getPos= function getPos(){
         return state.position;
     }
+    var reset = function reset(){
+        state.position = {x:20, y:20},
+        state.active = false;
+    }
     var applyForce = function applyForce(forceVector){
         state.speed.x += Math.max(-100, Math.min( forceVector.x, 100));
         state.speed.y += Math.max(-100, Math.min( forceVector.y, 100))
     }
+    var toggleActive = function toggleActive(){
+        state.active = !state.active
+    }
     return Object.assign(
         {trigger:trigger,
         getPos:getPos,
-        applyForce: applyForce},
+        applyForce: applyForce,
+        reset: reset,
+        toggleActive:toggleActive},
         renderable(state),
         stateReporter(state),
         mover(state)
