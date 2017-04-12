@@ -116,16 +116,9 @@ const Probe = function Probe(){
     }
     var resolveLaunchAngle = function resolveLaunchAngle(angle){
         // angle from vertical
-        var actingAngle = angle;
-        var mainComponent = 0;
-        while(actingAngle > 90){ actingAngle -= 90; mainComponent +90}
-
-        var moveVector =  {  x: defaultSpeed * Math.sin(angle * ( (Math.PI)/180) ),
-                             y: -defaultSpeed * Math.cos(angle * ( (Math.PI)/180) )
+        return {    x: defaultSpeed * Math.sin(angle * ( (Math.PI)/180) ),
+                    y: -defaultSpeed * Math.cos(angle * ( (Math.PI)/180) )
         }
-        console.log("angle: ", angle, "vector: ",moveVector);
-
-        return moveVector
     }
     return Object.assign(
         {trigger:trigger,
@@ -159,7 +152,7 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
     var state = {
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
-        satFieldSize: {width:canvasWidth, height:canvasHeight}
+        satFieldSize: {width:canvasWidth, height:canvasHeight},
     }
     var inBounds = function(position){
         return (position.x > 5 && position.x < state.satFieldSize.width -5
