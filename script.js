@@ -172,8 +172,6 @@ var update = function update(timeStep){   // update the objects
                 compSatellites.forEach(function(sat){ // reset everything to not active
                     sat.setActive(false)
                 });
-                
-                console.log(activeSats);
 
                 activeSats.forEach(function(satIndex){      // make the right ones active
                     compSatellites[satIndex].setActive(true);

@@ -44,7 +44,7 @@ const Satellite = function Satellite(arguments){
             }
     }
     var totalLoot = function totalLoot(){
-        return state.loot.player1 + state.loot.player2;
+        return state.loot[0] + state.loot[1];
     }
     var nextRound = function nextRound(){
         state.activePlayer = 1-state.activePlayer;
