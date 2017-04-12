@@ -14,17 +14,18 @@ const Satellite = function Satellite(arguments){
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
         rotation:0, // in degrees
         size: (arguments === undefined)? {width:20, height:20}: arguments.size,
-        loot:{ player1:0, player2:0}
+        loot: [0, 0],
+        activePlayer: 0
     }
-    var clickFunction = function clickFunction(state){
-        state.loot.player1 += 1;
+    var clickFunction = function clickFunction(state, arguments){
+        state.loot[state.activePlayer] += 1;
     }
     var renderScore = function renderScore(canvasContext, state){
         canvasContext.save();
         
         canvasContext.fillStyle = "#000000";
         canvasContext.translate(-4, -7);
-        canvasContext.fillText(state.loot.player1, 0 , 0)
+        canvasContext.fillText(state.loot[state.activePlayer], 0 , 0)
         canvasContext.restore();
     }
     var setActive = function setActive(isActive){
@@ -45,9 +46,13 @@ const Satellite = function Satellite(arguments){
     var totalLoot = function totalLoot(){
         return state.loot.player1 + state.loot.player2;
     }
+    var nextRound = function nextRound(){
+        state.activePlayer = 1-state.activePlayer;
+    }
     return Object.assign(
         {setActive: setActive,
-        exertForce: exertForce}, // start Object
+        exertForce: exertForce,
+        nextRound: nextRound}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -181,7 +186,7 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
             }
         });
     }
-    var activeSatellites = function calcGravity(position){
+    var activeSatellites = function activeSatellites(position){
 
         var sats = []
         var satForces = {};
@@ -235,6 +240,11 @@ const GameController = function GameController(arguments){
     var nextTurn = function nextTurn(){
         state.activePlayer = 1-state.activePlayer;
         state.turnPhase = 0;
+
+        state.satellites.forEach(function(sat){
+            sat.nextRound(); //TODO: change the active player on the satellites
+        })
+
     }
     var nextPhase = function nextPhase(){
         if(state.turnPhase < 2){state.turnPhase += 1}else{
