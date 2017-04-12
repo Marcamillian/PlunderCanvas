@@ -45,10 +45,13 @@ function init(){
     // event listeners for canvas element
     canvas.addEventListener("mousedown", function(e){
         keysDown["click"] = e;
-    });
-
-    canvas.addEventListener("mouseup",function(){
+    })
+    canvas.addEventListener("mouseup", function(e){
         delete keysDown["click"];
+        delete keysDown["move"];
+    })
+    canvas.addEventListener("mousemove", function(e){
+        keysDown["move"] = e;
     })
 
     // create the gameArea object for controlling game area
@@ -129,11 +132,9 @@ var update = function update(timeStep){   // update the objects
         // move if in bounds
         if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.reset()};
     }
-
+    
     // on a click
     if(keysDown["click"]){
-
-        var activeSats = [];
 
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
@@ -144,16 +145,22 @@ var update = function update(timeStep){   // update the objects
             return
         }
 
-        // rotate the ship
-        compPlayers[0].rotateToFace(clickPos)
-
-        // check satellite click
+        // check if a satellite was clicked
         compSatellites.forEach( function(sat){
-            sat.runClick( clickPos )
+            if( sat.runClick(clickPos) ){
+                delete keysDown["click"];  // if it was remove the click as it is dealt with
+                return 
+            }
         });
 
-        delete keysDown["click"];
+    }
 
+    // rotate the ship
+    if( keysDown["click"] && keysDown["move"] ){ // if there is a click
+        var movePos = {    x: keysDown["move"].offsetX,
+                            y: keysDown["move"].offsetY
+        }
+        compPlayers[0].rotateToFace(movePos);
     }
 
     // collision

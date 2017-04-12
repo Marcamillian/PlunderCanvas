@@ -58,13 +58,28 @@ const renderable = function renderable(state, additionalRender){
 const turnToClick = function turnToClick(state){
   return{
     rotateToFace: function rotateToFace(clickPosition){ // click position {x:0 , y:0}
+      var angle = this.getAngle2(clickPosition)
+      state.rotation =  angle;
+    },
+    getAngle2: function getAngle(clickPosition){ // vertical = 0 degrees
       var deltaX = state.position.x - clickPosition.x;
       var deltaY = state.position.y - clickPosition.y;
 
-      state.rotation =  (deltaX == 0 )? 0: 
-                          ( deltaY == 0) ? 90 :
-                            (Math.atan(deltaY/deltaX) * (180/Math.PI)) + 90; // not sure why the 90 is necessary
-    }
+      // if the differences are of the same sign                  :     // different sign
+      var angle = ( deltaX*deltaY > 0 ) ? Math.atan(deltaY/deltaX) * (180/Math.PI) : Math.atan(deltaX/deltaY) * (180/Math.PI)
+      angle = Math.abs(angle);
+      
+      // adjust for the different quadrants
+      if( deltaX < 0){ // right side
+        if (deltaY < 0 ){ angle += 90;  // bottom
+        }else{ }  // top
+      }else{  // left side
+        if(deltaY < 0 ){ angle += 180 // bottom
+        }else{ angle += 270} // top
+      }
+
+      return angle
+    } 
   }
 }
 

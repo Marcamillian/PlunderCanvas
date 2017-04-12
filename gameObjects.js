@@ -116,7 +116,6 @@ const Probe = function Probe(){
     }
     var resolveLaunchAngle = function resolveLaunchAngle(angle){
         // angle from vertical
-        console.log(angle);
         
         state.speed ={  x: defaultSpeed * Math.cos(angle * ( (2*Math.PI)/180) ),
                         y: defaultSpeed * Math.sin(angle * ( (2*Math.PI)/180) )
