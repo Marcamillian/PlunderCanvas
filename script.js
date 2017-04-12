@@ -5,6 +5,7 @@ var height;
 
 var then; // date() of previous frame 
 
+var gameController = {};
 var gameArea = {}; // object to contain the state of the play field and untility functions
 var compPlayers = []; // array of players
 var compSatellites = [];   // array of satellites
@@ -91,6 +92,13 @@ function init(){
     probe = Probe();
     fireButton = FireButton(probe);
 
+    // pass all the objects to the controller
+    gameController = GameController({   players:compPlayers,
+                                        satellites:compSatellites
+    });
+
+
+
     // render the things;
     render(ctx);
 
@@ -106,6 +114,8 @@ var reset = function reset(){         // reset the game
 
 
 var update = function update(timeStep){   // update the objects
+
+    var activePlayer = gameController.getActivePlayer()
 
     // probe movement && force update
     if(probe.isActive()){
@@ -140,7 +150,7 @@ var update = function update(timeStep){   // update the objects
                             y: keysDown["click"].offsetY}
 
         // see if we are firing the probe - don't to anything else if it is
-        if(fireButton.runClick( clickPos , {launchAngle:compPlayers[0].getAngle()})){
+        if(fireButton.runClick( clickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
             delete keysDown["click"]; 
             return
         }
@@ -160,7 +170,7 @@ var update = function update(timeStep){   // update the objects
         var movePos = {    x: keysDown["move"].offsetX,
                             y: keysDown["move"].offsetY
         }
-        compPlayers[0].rotateToFace(movePos);
+        compPlayers[activePlayer].rotateToFace(movePos);
     }
 
     // collision

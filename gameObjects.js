@@ -59,7 +59,7 @@ const Ship = function Ship(arguments){
     var state = {
         colour: "#FFFFFF",
         position: (arguments === undefined)? {x:10, y:10}: arguments.position,
-        rotation:15, // in degrees
+        rotation:0, // in degrees
         size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     }
     var getAngle = function getAngle(){ return state.rotation}
@@ -215,6 +215,37 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
         inBounds: inBounds},
+        stateReporter(state)
+    )
+}
+
+const GameController = function GameController(arguments){
+    var state = {
+        activePlayer: 0,
+        turnPhase:0,
+        satellites: arguments.satellites,
+        players: arguments.players
+    }
+    var getActivePlayer = function getActivePlayer(){
+        return state.activePlayer
+    }
+    var getPhase = function getPhase(){
+        return state.turnPhase
+    }
+    var nextTurn = function nextTurn(){
+        state.activePlayer = 1-state.activePlayer;
+        state.turnPhase = 0;
+    }
+    var nextPhase = function nextPhase(){
+        if(state.turnPhase < 2){state.turnPhase += 1}else{
+            nextTurn()
+        }
+        console.log("activePlayer: ", state.activePlayer, " || Phase: ",state.turnPhase )
+    }
+    return Object.assign(
+        {nextPhase:nextPhase,
+        getPhase: getPhase,
+        getActivePlayer:getActivePlayer},
         stateReporter(state)
     )
 }
