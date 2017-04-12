@@ -39,7 +39,7 @@ const Satellite = function Satellite(arguments){
         var totalForce = (totalLoot() * gravity) / hypDistance ;
 
         return { // TODO: figure out the right values for this
-                x: (distance_X) ? totalForce * (distance_X/hypDistance) : 0,
+                x: (distance_X) ? totalForce * (distance_X/hypDistance) : V0,
                 y: (distance_Y) ? totalForce * (distance_Y/hypDistance) : 0
             }
     }
@@ -96,7 +96,7 @@ const Probe = function Probe(){
         speed:{x:0, y:defaultSpeed}
     }
     var trigger = function trigger(givenState, triggerArgs){
-        if (triggerArgs.launchAngle) resolveLaunchAngle(triggerArgs.launchAngle)
+        if (triggerArgs.launchAngle) { state.speed = resolveLaunchAngle(triggerArgs.launchAngle) }
         givenState.active = true;
     }
     var getPos= function getPos(){
@@ -116,10 +116,16 @@ const Probe = function Probe(){
     }
     var resolveLaunchAngle = function resolveLaunchAngle(angle){
         // angle from vertical
-        
-        state.speed ={  x: defaultSpeed * Math.cos(angle * ( (2*Math.PI)/180) ),
-                        y: defaultSpeed * Math.sin(angle * ( (2*Math.PI)/180) )
+        var actingAngle = angle;
+        var mainComponent = 0;
+        while(actingAngle > 90){ actingAngle -= 90; mainComponent +90}
+
+        var moveVector =  {  x: defaultSpeed * Math.sin(angle * ( (Math.PI)/180) ),
+                             y: -defaultSpeed * Math.cos(angle * ( (Math.PI)/180) )
         }
+        console.log("angle: ", angle, "vector: ",moveVector);
+
+        return moveVector
     }
     return Object.assign(
         {trigger:trigger,
