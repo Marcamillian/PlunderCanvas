@@ -45,10 +45,13 @@ function init(){
     // event listeners for canvas element
     canvas.addEventListener("mousedown", function(e){
         keysDown["click"] = e;
-    });
-
-    canvas.addEventListener("mouseup",function(){
+    })
+    canvas.addEventListener("mouseup", function(e){
         delete keysDown["click"];
+        delete keysDown["move"];
+    })
+    canvas.addEventListener("mousemove", function(e){
+        keysDown["move"] = e;
     })
 
     // create the gameArea object for controlling game area
@@ -127,32 +130,37 @@ var update = function update(timeStep){   // update the objects
         probe.applyForce(appliedForce);
 
         // move if in bounds
-        if(gameArea.inBounds(probePos)){probe.move(timeStep)};
+        if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.reset()};
     }
-
+    
     // on a click
     if(keysDown["click"]){
-
-        var activeSats = [];
 
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
 
-        // move the click marker
-        clickMarker.moveTo(clickPos)
+        // see if we are firing the probe - don't to anything else if it is
+        if(fireButton.runClick( clickPos , {launchAngle:compPlayers[0].getAngle()})){
+            delete keysDown["click"]; 
+            return
+        }
 
-        // rotate the ship
-        compPlayers[0].rotateToFace(clickPos)
-
-        // check satellite click
+        // check if a satellite was clicked
         compSatellites.forEach( function(sat){
-            sat.runClick( clickPos )
+            if( sat.runClick(clickPos) ){
+                delete keysDown["click"];  // if it was remove the click as it is dealt with
+                return 
+            }
         });
 
-        fireButton.runClick( clickPos )
+    }
 
-        delete keysDown["click"];
-
+    // rotate the ship
+    if( keysDown["click"] && keysDown["move"] ){ // if there is a click
+        var movePos = {    x: keysDown["move"].offsetX,
+                            y: keysDown["move"].offsetY
+        }
+        compPlayers[0].rotateToFace(movePos);
     }
 
     // collision
@@ -197,19 +205,4 @@ var mainLoop = function mainLoop(){
 
     // request to do this again ASAP
     requestAnimationFrame(mainLoop);
-}
-
-
-// helper FUNCTIONS
-
-// TODO: get the gravity change for a given probe position
-var calcGravity = function calcGravity(position, spaceWidth, spaceHeight){  // {x:Number, y : Number}
-    // <--[input] position of the probe
-    // [output] --> speed change as a vector
-
-    // calc which satellites are active
-    // x gridspace
-
-    // y gridspace
-
 }

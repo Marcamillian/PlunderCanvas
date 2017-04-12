@@ -8,6 +8,7 @@ var probe = {
 
 // SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
+    const gravity = 5;
     var state = {
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
@@ -32,10 +33,14 @@ const Satellite = function Satellite(arguments){
     var exertForce = function extertForce(targetPosition){
         var distance_X= state.position.x - targetPosition.x;
         var distance_Y= state.position.y - targetPosition.y;
+        var hypDistance = Math.sqrt( Math.pow(distance_X,2) + Math.pow(distance_Y, 2) );
+
+        // force applied = Grav * (mass) / d^2
+        var totalForce = (totalLoot() * gravity) / hypDistance ;
 
         return { // TODO: figure out the right values for this
-                x: 2/distance_X * totalLoot(),
-                y: 2/distance_Y * totalLoot()
+                x: (distance_X) ? totalForce * (distance_X/hypDistance) : V0,
+                y: (distance_Y) ? totalForce * (distance_Y/hypDistance) : 0
             }
     }
     var totalLoot = function totalLoot(){
@@ -58,8 +63,9 @@ const Ship = function Ship(arguments){
         rotation:15, // in degrees
         size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     }
+    var getAngle = function getAngle(){ return state.rotation}
     return Object.assign(
-        {},
+        {getAngle: getAngle},
         renderable(state),
         turnToClick(state),
         stateReporter(state)
@@ -81,41 +87,59 @@ const ClickMarker = function ClickMarker(){
 }
 
 const Probe = function Probe(){
+    const defaultSpeed = 100;
     var state = {
         colour: '#ff69b4',
         position: { x:200 , y:20 },
         size: {width: 10, height:10},
         active: false,
-        speed:{x:0, y:25}
+        speed:{x:0, y:defaultSpeed}
     }
-    var trigger = function trigger(givenState){
+    var trigger = function trigger(givenState, triggerArgs){
+        if (triggerArgs.launchAngle) { state.speed = resolveLaunchAngle(triggerArgs.launchAngle) }
         givenState.active = true;
     }
     var getPos= function getPos(){
         return state.position;
     }
+    var reset = function reset(){
+        state.position = {x:200, y:20};
+        state.speed = {x:0,y:defaultSpeed};
+        state.active = false;
+    }
     var applyForce = function applyForce(forceVector){
         state.speed.x += Math.max(-100, Math.min( forceVector.x, 100));
         state.speed.y += Math.max(-100, Math.min( forceVector.y, 100))
     }
+    var toggleActive = function toggleActive(){
+        state.active = !state.active
+    }
+    var resolveLaunchAngle = function resolveLaunchAngle(angle){
+        // angle from vertical
+        return {    x: defaultSpeed * Math.sin(angle * ( (Math.PI)/180) ),
+                    y: -defaultSpeed * Math.cos(angle * ( (Math.PI)/180) )
+        }
+    }
     return Object.assign(
         {trigger:trigger,
         getPos:getPos,
-        applyForce: applyForce},
+        applyForce: applyForce,
+        reset: reset,
+        toggleActive:toggleActive},
         renderable(state),
         stateReporter(state),
         mover(state)
     )
 }
 
-const FireButton = function FireButton(targetObject){
+const FireButton = function FireButton(targetObject, triggerArgs){
     var state = {
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
-    var clickFunction = function clickFunction(){
-        targetObject.trigger(targetObject.getState()); // HACKY WAY ROUND THE CLOSURE
+    var clickFunction = function clickFunction(state, clickArgs){
+        targetObject.trigger(targetObject.getState(), clickArgs); // HACKY WAY ROUND THE CLOSURE
     }
     return Object.assign(
         {},
@@ -128,7 +152,7 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
     var state = {
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
-        satFieldSize: {width:canvasWidth, height:canvasHeight}
+        satFieldSize: {width:canvasWidth, height:canvasHeight},
     }
     var inBounds = function(position){
         return (position.x > 5 && position.x < state.satFieldSize.width -5
