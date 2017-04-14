@@ -17,8 +17,22 @@ const Satellite = function Satellite(arguments){
         loot: [0, 0],
         activePlayer: 0
     }
+    var update = function update(arguments){ // phase: , click
+
+    }
+    var reset = function reset(){
+        state = originalState
+    }
     var clickFunction = function clickFunction(state, arguments){
-        state.loot[state.activePlayer] += 1;
+        switch(arguments.phase){
+            case 0:
+                state.loot[state.activePlayer] += 1;
+                break
+            case 2:
+                //state.colour = "#00ff00"
+                break
+        }
+        
     }
     var renderScore = function renderScore(canvasContext, state){
         canvasContext.save();
@@ -52,7 +66,8 @@ const Satellite = function Satellite(arguments){
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
-        nextRound: nextRound}, // start Object
+        nextRound: nextRound,
+        update: update}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -67,10 +82,17 @@ const Ship = function Ship(arguments){
         rotation:0, // in degrees
         size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     }
+    var update = function update(){
+
+    }
+    var reset = function reset(){
+
+    }
     var getAngle = function getAngle(){ return state.rotation}
     var getPos = function getPos(){return state.position}
     return Object.assign(
-        {getAngle: getAngle,
+        { update:update,
+        getAngle: getAngle,
         getPos: getPos},
         renderable(state),
         turnToClick(state),
@@ -99,7 +121,17 @@ const Probe = function Probe(){
         position: { x:200 , y:20 },
         size: {width: 10, height:10},
         active: false,
-        speed:{x:0, y:defaultSpeed}
+        speed:{x:0, y:defaultSpeed},
+        exipred: false
+    }
+    var update = function update(){
+
+    }
+    var reset = function reset(arguments){
+        state.position = (arguments == undefined) ? {x:200, y:20} : arguments.position;
+        state.speed = {x:0,y:defaultSpeed};
+        state.active = false;
+        state.expired = false;
     }
     var trigger = function trigger(givenState, triggerArgs){
         if (triggerArgs.launchAngle) { state.speed = resolveLaunchAngle(triggerArgs.launchAngle) }
@@ -110,11 +142,6 @@ const Probe = function Probe(){
     }
     var setPosition = function setPosition(newPosition){
         state.position = newPosition;
-    }
-    var reset = function reset(){
-        state.position = {x:200, y:20};
-        state.speed = {x:0,y:defaultSpeed};
-        state.active = false;
     }
     var applyForce = function applyForce(forceVector){
         state.speed.x += Math.max(-100, Math.min( forceVector.x, 100));
@@ -129,13 +156,23 @@ const Probe = function Probe(){
                     y: -defaultSpeed * Math.cos(angle * ( (Math.PI)/180) )
         }
     }
+    var expire = function(){
+        state.expired = true;
+        state.active = false;
+    }
+    var isExpired = function (){
+        return state.expired;
+    }
     return Object.assign(
-        {trigger:trigger,
+        { update:update,
+        reset: reset,
+        trigger:trigger,
         getPos:getPos,
         applyForce: applyForce,
-        reset: reset,
         toggleActive:toggleActive,
-        setPosition: setPosition},
+        setPosition: setPosition,
+        expire: expire,
+        isExpired: isExpired},
         renderable(state),
         stateReporter(state),
         mover(state)
@@ -148,11 +185,18 @@ const FireButton = function FireButton(targetObject, triggerArgs){
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
+    var update = function update(){
+
+    }
+    var reset = function reset(){
+
+    }
     var clickFunction = function clickFunction(state, clickArgs){
         targetObject.trigger(targetObject.getState(), clickArgs); // HACKY WAY ROUND THE CLOSURE
     }
     return Object.assign(
-        {},
+        {update:update,
+        reset:reset},
         renderable(state),
         reactToClick(state, clickFunction)
     )
@@ -163,6 +207,12 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
         satFieldSize: {width:canvasWidth, height:canvasHeight},
+    }
+    var reset = function reset(){
+
+    }
+    var update = function update(){
+
     }
     var inBounds = function(position){
         return (position.x > 5 && position.x < state.satFieldSize.width -5
@@ -232,11 +282,36 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
 
 const GameController = function GameController(arguments){
     var state = {
+        // game state trackers
         activePlayer: 0,
         turnPhase:0,
+        // game objects to manipulate
         satellites: arguments.satellites,
         players: arguments.players,
-        probe: arguments.probe
+        probe: arguments.probe,
+        // round end flags
+        satellitesToAdd: 10,
+        phaseComplete: false,
+        satelliteStolen: undefined,
+    }
+    var reset = function reset(){
+        
+    }
+    var update = function update(){
+        switch (state.turnPhase){ /// CHECK IF THE PHASE IS OVER
+            case 0:
+                if(state.satellitesToAdd <= 0){ state.phaseComplete = true } // if enough loot handed out - go to next phase
+                break
+            case 1:
+                if( probe.isExpired()){ state.phaseComplete = true; }
+                break
+            case 2:
+                if( state.satelliteStolen != undefined){ state.phaseComplete = true}
+            break 
+        }
+        
+        if(state.phaseComplete){ nextPhase() }
+        
     }
     var getActivePlayer = function getActivePlayer(){
         return state.activePlayer
@@ -246,30 +321,56 @@ const GameController = function GameController(arguments){
     }
     var nextTurn = function nextTurn(){
 
-        var newProbePosition;
 
-        state.activePlayer = 1-state.activePlayer;
-        state.turnPhase = 0;
-
-        state.satellites.forEach(function(sat){
-            sat.nextRound(); //TODO: change the active player on the satellites
-        })
-
-        newProbePos = state.players[state.activePlayer].getPos()
-
-        state.probe.setPosition({x: newProbePos.x, y: newProbePos.y})
-
+        
     }
     var nextPhase = function nextPhase(){
-        if(state.turnPhase < 2){state.turnPhase += 1}else{
-            nextTurn()
+        state.phaseComplete = false;
+        switch(state.turnPhase){
+            case 0:
+                state.satellitesToAdd = 10;
+                state.turnPhase = 1
+                break;
+            case 1:
+                newProbePos = state.players[1-state.activePlayer].getPos()
+                probe.reset({position: {    x: newProbePos.x,
+                                            y: newProbePos.y
+                }})
+                state.turnPhase = 2
+                break;
+            case 2:
+                
+                // empty the oppositions loot from the satellite
+                // give it to the player
+                console.log(state.satellites[state.satelliteStolen])
+                
+                state.activePlayer = 1-state.activePlayer;
+                
+                
+                state.satelliteStolen = undefined;
+                state.satellites.forEach(function(sat){
+                    sat.nextRound(); //TODO: change the active player on the satellites
+                })
+
+                state.turnPhase = 0
+                break;
         }
+        
         console.log("activePlayer: ", state.activePlayer, " || Phase: ",state.turnPhase )
     }
+    var satAdded = function satAdded(){
+        state.satellitesToAdd --;
+    }
+    var setSatelliteStolen = function setSatelliteStolen(satelliteIndex){
+        state.satelliteStolen = satelliteIndex;
+    }
     return Object.assign(
-        {nextPhase:nextPhase,
+        { update:update,
+        nextPhase:nextPhase,
         getPhase: getPhase,
-        getActivePlayer:getActivePlayer},
+        getActivePlayer:getActivePlayer,
+        satAdded: satAdded,
+        setSatelliteStolen: setSatelliteStolen},
         stateReporter(state)
     )
 }

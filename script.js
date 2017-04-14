@@ -127,16 +127,15 @@ var update = function update(timeStep){   // update the objects
                                     y: keysDown["click"].offsetY}
 
                 // check if a satellite was clicked
-                compSatellites.forEach( function(sat){
-                    if( sat.runClick(clickPos) ){
-                        delete keysDown["click"];  // if it was remove the click as it is dealt with
-                        return 
+                compSatellites.forEach( function(sat){    
+                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
+                        delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                        gameController.satAdded();
                     }
                 });
 
             }
-
-            return
+            break;
         case 1: // aiming and firing the probe
 
             // on a click
@@ -184,16 +183,30 @@ var update = function update(timeStep){   // update the objects
                 probe.applyForce(appliedForce);
 
                 // move if in bounds
-                if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.reset()};
+                if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.expire()};
             }
-
-            return
+            break;
         case 2: // choosing a satellite
+            if(keysDown["click"]){
 
-            // clicking 
+                var clickPos = {    x: keysDown["click"].offsetX,
+                                    y: keysDown["click"].offsetY}
 
-            return
+                // check if a satellite was clicked
+                compSatellites.forEach( function(sat, index){    
+                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
+                        gameController.setSatelliteStolen(index);
+                        delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                    }
+                });
+
+            }
+            
+            break
+
     }
+
+    gameController.update();
 
 }
 
