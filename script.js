@@ -94,7 +94,8 @@ function init(){
 
     // pass all the objects to the controller
     gameController = GameController({   players:compPlayers,
-                                        satellites:compSatellites
+                                        satellites:compSatellites,
+                                        probe: probe
     });
 
 
@@ -208,6 +209,9 @@ var render = function render(canvasContext){
         sat.draw(canvasContext);
     })
 
+    probe.draw(canvasContext);
+    fireButton.draw(canvasContext);
+
     // updated players using composition
     compPlayers.forEach(function(drawPlayer){
         drawPlayer.draw(canvasContext);
@@ -215,8 +219,7 @@ var render = function render(canvasContext){
 
     // render click marker
     //clickMarker.draw(canvasContext)
-    probe.draw(canvasContext);
-    fireButton.draw(canvasContext);
+
 
 
 }

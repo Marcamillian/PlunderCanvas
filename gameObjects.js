@@ -68,8 +68,10 @@ const Ship = function Ship(arguments){
         size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
     }
     var getAngle = function getAngle(){ return state.rotation}
+    var getPos = function getPos(){return state.position}
     return Object.assign(
-        {getAngle: getAngle},
+        {getAngle: getAngle,
+        getPos: getPos},
         renderable(state),
         turnToClick(state),
         stateReporter(state)
@@ -106,6 +108,9 @@ const Probe = function Probe(){
     var getPos= function getPos(){
         return state.position;
     }
+    var setPosition = function setPosition(newPosition){
+        state.position = newPosition;
+    }
     var reset = function reset(){
         state.position = {x:200, y:20};
         state.speed = {x:0,y:defaultSpeed};
@@ -129,7 +134,8 @@ const Probe = function Probe(){
         getPos:getPos,
         applyForce: applyForce,
         reset: reset,
-        toggleActive:toggleActive},
+        toggleActive:toggleActive,
+        setPosition: setPosition},
         renderable(state),
         stateReporter(state),
         mover(state)
@@ -229,7 +235,8 @@ const GameController = function GameController(arguments){
         activePlayer: 0,
         turnPhase:0,
         satellites: arguments.satellites,
-        players: arguments.players
+        players: arguments.players,
+        probe: arguments.probe
     }
     var getActivePlayer = function getActivePlayer(){
         return state.activePlayer
@@ -238,12 +245,19 @@ const GameController = function GameController(arguments){
         return state.turnPhase
     }
     var nextTurn = function nextTurn(){
+
+        var newProbePosition;
+
         state.activePlayer = 1-state.activePlayer;
         state.turnPhase = 0;
 
         state.satellites.forEach(function(sat){
             sat.nextRound(); //TODO: change the active player on the satellites
         })
+
+        newProbePos = state.players[state.activePlayer].getPos()
+
+        state.probe.setPosition({x: newProbePos.x, y: newProbePos.y})
 
     }
     var nextPhase = function nextPhase(){
