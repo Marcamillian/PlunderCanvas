@@ -60,6 +60,11 @@ const Satellite = function Satellite(arguments){
     var totalLoot = function totalLoot(){
         return state.loot[0] + state.loot[1];
     }
+    var stealLoot = function stealLoot(player){
+        var lootStolen = state.loot[player];
+        state.loot[player] = 0;
+        return lootStolen;
+    }
     var nextRound = function nextRound(){
         state.activePlayer = 1-state.activePlayer;
     }
@@ -67,7 +72,8 @@ const Satellite = function Satellite(arguments){
         {setActive: setActive,
         exertForce: exertForce,
         nextRound: nextRound,
-        update: update}, // start Object
+        update: update,
+        stealLoot: stealLoot}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -78,9 +84,10 @@ const Satellite = function Satellite(arguments){
 const Ship = function Ship(arguments){
     var state = {
         colour: "#FFFFFF",
-        position: (arguments === undefined)? {x:10, y:10}: arguments.position,
-        rotation:0, // in degrees
-        size:{width:20,height:40}//(arguments===undefined)?{width:20,height:40}: arguments.position
+        position: (arguments.position) ? arguments.position : {x:10, y:10},
+        rotation: (arguments.rotation) ? arguments.position : 0, // in degrees
+        size:(arguments.size) ? arguments.size : {width:20,height:40},//(arguments===undefined)?{width:20,height:40}: arguments.position
+
     }
     var update = function update(){
 
@@ -293,6 +300,7 @@ const GameController = function GameController(arguments){
         satellitesToAdd: 10,
         phaseComplete: false,
         satelliteStolen: undefined,
+        scores: [0,0]
     }
     var reset = function reset(){
         
@@ -319,11 +327,6 @@ const GameController = function GameController(arguments){
     var getPhase = function getPhase(){
         return state.turnPhase
     }
-    var nextTurn = function nextTurn(){
-
-
-        
-    }
     var nextPhase = function nextPhase(){
         state.phaseComplete = false;
         switch(state.turnPhase){
@@ -342,10 +345,13 @@ const GameController = function GameController(arguments){
                 
                 // empty the oppositions loot from the satellite
                 // give it to the player
-                console.log(state.satellites[state.satelliteStolen])
-                
-                state.activePlayer = 1-state.activePlayer;
-                
+                var stolenPoints = state.satellites[state.satelliteStolen].stealLoot(1-state.activePlayer)
+                console.log("points stolen: ", stolenPoints);
+                state.scores[state.activePlayer] += stolenPoints;
+
+                console.log("score: Player 1 ", state.scores[0], " | Player 2 ",state.scores[1])
+
+                state.activePlayer = 1-state.activePlayer; // shift to the next player
                 
                 state.satelliteStolen = undefined;
                 state.satellites.forEach(function(sat){
@@ -356,7 +362,6 @@ const GameController = function GameController(arguments){
                 break;
         }
         
-        console.log("activePlayer: ", state.activePlayer, " || Phase: ",state.turnPhase )
     }
     var satAdded = function satAdded(){
         state.satellitesToAdd --;
