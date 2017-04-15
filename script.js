@@ -94,14 +94,15 @@ function init(){
 
     // set up the messaging object
     messageWindow = InfoPopUp( {    position:{x:200, y:300},
-                                    size:{width: 200, height:300}
+                                    size:{width: canvas.width-10, height:canvas.height-100}
                                     });
 
     // pass all the objects to the controller
     gameController = GameController({   players:compPlayers,
                                         satellites:compSatellites,
                                         probe: probe,
-                                        messageBox: messageWindow
+                                        messageBox: messageWindow,
+                                        fireButton: fireButton
     });
 
 

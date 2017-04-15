@@ -206,9 +206,13 @@ const FireButton = function FireButton(targetObject, triggerArgs){
     var clickFunction = function clickFunction(state, clickArgs){
         targetObject.trigger(targetObject.getState(), clickArgs); // HACKY WAY ROUND THE CLOSURE
     }
+    var setPos = function setPos(position){
+        state.position = position;
+    }
     return Object.assign(
         {update:update,
-        reset:reset},
+        reset:reset,
+        setPos:setPos},
         renderable(state),
         reactToClick(state, clickFunction)
     )
@@ -304,6 +308,7 @@ const GameController = function GameController(arguments){
         players: arguments.players,
         probe: arguments.probe,
         messageBox: arguments.messageBox,
+        fireButton: fireButton,
         // round end flags
         satellitesToAdd: 10,
         phaseComplete: false,
@@ -367,6 +372,9 @@ const GameController = function GameController(arguments){
                 state.satellites.forEach(function(sat){
                     sat.nextRound(); //TODO: change the active player on the satellites
                 })
+
+                // change the fire button posiion
+                state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
 
                 state.turnPhase = 0
                 break;
