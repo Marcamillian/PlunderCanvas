@@ -232,6 +232,9 @@ var render = function render(canvasContext){
     canvasContext.fillStyle = "#000000";
     canvasContext.fillRect(0,0,canvas.width, canvas.height);
 
+    // draw scores
+    gameController.drawScores(canvasContext);
+
     // draw satellites
     compSatellites.forEach(function(sat){
         sat.draw(canvasContext);

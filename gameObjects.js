@@ -379,13 +379,28 @@ const GameController = function GameController(arguments){
     var setSatelliteStolen = function setSatelliteStolen(satelliteIndex){
         state.satelliteStolen = satelliteIndex;
     }
+    var drawScores = function drawScores(canvasCtx){
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 20);
+        canvasCtx.fillText("Score: "+ state.scores[0], 0 , 0)
+        canvasCtx.restore()
+
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 580 );
+        canvasCtx.fillText("Score: "+ state.scores[1], 0 , 0)
+        canvasCtx.restore()
+
+    }
     return Object.assign(
         { update:update,
         nextPhase:nextPhase,
         getPhase: getPhase,
         getActivePlayer:getActivePlayer,
         satAdded: satAdded,
-        setSatelliteStolen: setSatelliteStolen},
+        setSatelliteStolen: setSatelliteStolen,
+        drawScores: drawScores},
         stateReporter(state)
     )
 }
