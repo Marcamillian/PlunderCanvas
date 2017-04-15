@@ -92,6 +92,11 @@ function init(){
     probe = Probe();
     fireButton = FireButton(probe);
 
+    // set up the messaging object
+    messageWindow = InfoPopUp( {    position:{x:200, y:300},
+                                    size:{width: 200, height:300}
+                                    });
+
     // pass all the objects to the controller
     gameController = GameController({   players:compPlayers,
                                         satellites:compSatellites,
@@ -117,6 +122,15 @@ var reset = function reset(){         // reset the game
 var update = function update(timeStep){   // update the objects
 
     var activePlayer = gameController.getActivePlayer()
+
+    // check if the message window is clicked so that you can hide it
+    if(messageWindow.getClickActive() && keysDown["click"]){
+
+        var clickPos = {    x: keysDown["click"].offsetX,
+                            y: keysDown["click"].offsetY}
+        messageWindow.runClick(clickPos);
+        return;
+    }
 
     switch(gameController.getPhase()){
         case 0: // setting score on satellites
@@ -232,7 +246,9 @@ var render = function render(canvasContext){
 
     // render click marker
     //clickMarker.draw(canvasContext)
-
+    
+    // render the info window
+    messageWindow.draw(canvasContext);
 
 
 }

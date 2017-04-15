@@ -35,23 +35,27 @@ const stateReporter = function stateReporter(state){
 const renderable = function renderable(state, additionalRender){
     return{
         draw: function draw(canvasContext){ // tick time = time between frames in miliseconds
-            canvasContext.save()
+            if (state.visible){
+              canvasContext.save()
 
-            canvasContext.fillStyle = state.colour; // set the right colour
-            canvasContext.translate(state.position.x , state.position.y) // move to the right position
-            canvasContext.rotate( state.rotation * (Math.PI/180) );
-            canvasContext.translate(- state.size.width/2, - state.size.height/2) // move to top left of object
-            canvasContext.fillRect(0, 0, state.size.width, state.size.height); // draw the object
-            canvasContext.translate( state.size.width/2, state.size.height); // move back to middle
+              canvasContext.fillStyle = state.colour; // set the right colour
+              canvasContext.translate(state.position.x , state.position.y) // move to the right position
+              canvasContext.rotate( state.rotation * (Math.PI/180) );
+              canvasContext.translate(- state.size.width/2, - state.size.height/2) // move to top left of object
+              canvasContext.fillRect(0, 0, state.size.width, state.size.height); // draw the object
+              canvasContext.translate( state.size.width/2, state.size.height); // move back to middle
 
-            // make additional render steps if necessary
-            if (additionalRender){
-              additionalRender.forEach(function(renderFunction){ renderFunction(canvasContext, state) })
+              // make additional render steps if necessary
+              if (additionalRender){
+                additionalRender.forEach(function(renderFunction){ renderFunction(canvasContext, state) })
+              }
+
+              canvasContext.restore()
             }
-
-            canvasContext.restore()
-            
-        }
+        },
+        toggleShow: function toggleShow(){
+          state.visible = !state.visible
+        } 
     }
 }
 

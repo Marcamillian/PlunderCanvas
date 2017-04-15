@@ -10,6 +10,7 @@ var probe = {
 const Satellite = function Satellite(arguments){ 
     const gravity = 5;
     var state = {
+        visible: true,
         colour: "#adff00",
         position: (arguments === undefined)? {x:20, y:20}: arguments.position,
         rotation:0, // in degrees
@@ -84,6 +85,7 @@ const Satellite = function Satellite(arguments){
 const Ship = function Ship(arguments){
     var state = {
         colour: "#FFFFFF",
+        visible: true,
         position: (arguments.position) ? arguments.position : {x:10, y:10},
         rotation: (arguments.rotation) ? arguments.position : 0, // in degrees
         size:(arguments.size) ? arguments.size : {width:20,height:40},//(arguments===undefined)?{width:20,height:40}: arguments.position
@@ -111,6 +113,7 @@ const Ship = function Ship(arguments){
 const ClickMarker = function ClickMarker(){
     var state = {
         colour: '#ff69b4',
+        visible:true,
         position: { x:20, y:20},
         size: {width:10, height:10}
     }
@@ -124,6 +127,7 @@ const ClickMarker = function ClickMarker(){
 const Probe = function Probe(){
     const defaultSpeed = 100;
     var state = {
+        visible: true,
         colour: '#ff69b4',
         position: { x:200 , y:20 },
         size: {width: 10, height:10},
@@ -188,6 +192,7 @@ const Probe = function Probe(){
 
 const FireButton = function FireButton(targetObject, triggerArgs){
     var state = {
+        visible: true,
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
@@ -377,5 +382,40 @@ const GameController = function GameController(arguments){
         satAdded: satAdded,
         setSatelliteStolen: setSatelliteStolen},
         stateReporter(state)
+    )
+}
+
+const InfoPopUp = function InfoPopUp(arguments){
+    var state = {
+        clickActive: true,
+        visible: false,
+        colour: "#ffffff",
+        position: (arguments.position) ? arguments.position : {x:200,y:400},
+        size: (arguments.size ) ? arguments.size : {width: 100, height: 200},
+        message: "someText"
+    }
+    var drawMessage = function drawMessage(canvasContext, state){
+        canvasContext.save();
+        
+        canvasContext.fillStyle = "#000000";
+        canvasContext.translate(-state.size.width/2, -state.size.height/2);
+        canvasContext.fillText(state.message, 0 , 0)
+        canvasContext.restore();
+    }
+    var clickFunction = function clickFunction(state, clickArgs){
+        state.visible = false;
+        state.clickActive = false;
+    }
+    var getClickActive = function getClickActive(){
+        return state.clickActive
+    }
+    var setMessage = function setMessage(newMessage){
+        state.message = newMessage;
+    }
+    return Object.assign(
+        {getClickActive: getClickActive,
+        setMessage: setMessage},
+        renderable(state, [drawMessage]),
+        reactToClick(state, clickFunction)
     )
 }
