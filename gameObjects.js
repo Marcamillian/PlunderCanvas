@@ -158,8 +158,8 @@ const Probe = function Probe(){
         state.speed.x += Math.max(-100, Math.min( forceVector.x, 100));
         state.speed.y += Math.max(-100, Math.min( forceVector.y, 100))
     }
-    var toggleActive = function toggleActive(){
-        state.active = !state.active
+    var toggleActive = function toggleActive(isActive){
+        (isActive == undefined) ? state.active = !state.active : state.active = isActive;
     }
     var resolveLaunchAngle = function resolveLaunchAngle(angle){
         // angle from vertical
@@ -293,6 +293,8 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
 }
 
 const GameController = function GameController(arguments){
+    
+    console.log(arguments)
     var state = {
         // game state trackers
         activePlayer: 0,
@@ -301,6 +303,7 @@ const GameController = function GameController(arguments){
         satellites: arguments.satellites,
         players: arguments.players,
         probe: arguments.probe,
+        messageBox: arguments.messageBox,
         // round end flags
         satellitesToAdd: 10,
         phaseComplete: false,
@@ -355,9 +358,11 @@ const GameController = function GameController(arguments){
                 state.scores[state.activePlayer] += stolenPoints;
 
                 console.log("score: Player 1 ", state.scores[0], " | Player 2 ",state.scores[1])
-
+                state.messageBox.setMessage(" Plunder stolen: " + stolenPoints + ". Next Players Turn"); // put instructions for the players
+                state.messageBox.toggleShow(true)   // show the message on screen
                 state.activePlayer = 1-state.activePlayer; // shift to the next player
                 
+                //reset the flags for phase/round end
                 state.satelliteStolen = undefined;
                 state.satellites.forEach(function(sat){
                     sat.nextRound(); //TODO: change the active player on the satellites
@@ -387,7 +392,6 @@ const GameController = function GameController(arguments){
 
 const InfoPopUp = function InfoPopUp(arguments){
     var state = {
-        clickActive: true,
         visible: false,
         colour: "#ffffff",
         position: (arguments.position) ? arguments.position : {x:200,y:400},
@@ -404,16 +408,15 @@ const InfoPopUp = function InfoPopUp(arguments){
     }
     var clickFunction = function clickFunction(state, clickArgs){
         state.visible = false;
-        state.clickActive = false;
     }
-    var getClickActive = function getClickActive(){
-        return state.clickActive
+    var getVisible = function getVisible(){
+        return state.visible
     }
     var setMessage = function setMessage(newMessage){
         state.message = newMessage;
     }
     return Object.assign(
-        {getClickActive: getClickActive,
+        {getVisible: getVisible,
         setMessage: setMessage},
         renderable(state, [drawMessage]),
         reactToClick(state, clickFunction)

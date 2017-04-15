@@ -100,7 +100,8 @@ function init(){
     // pass all the objects to the controller
     gameController = GameController({   players:compPlayers,
                                         satellites:compSatellites,
-                                        probe: probe
+                                        probe: probe,
+                                        messageBox: messageWindow
     });
 
 
@@ -124,7 +125,7 @@ var update = function update(timeStep){   // update the objects
     var activePlayer = gameController.getActivePlayer()
 
     // check if the message window is clicked so that you can hide it
-    if(messageWindow.getClickActive() && keysDown["click"]){
+    if(messageWindow.getVisible() && keysDown["click"]){
 
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
