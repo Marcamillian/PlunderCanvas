@@ -317,8 +317,20 @@ const GameController = function GameController(arguments){
         // endGame flags
 
     }
-    var reset = function reset(){
-        
+    var reset = function reset(mode){
+        switch(mode){
+            case "point_rush":
+                state.satellites.forEach(function(sat){sat.reset()});
+                state.players.forEach(function(player){player.reset()})
+                // game state trackers
+                state.activePlayer = 0;
+                state.turnPhase = 0
+                state.satellitesToAdd = 10;
+                state.phaseComplete = false;
+                state.satelliteStolen = undefined;
+                state.scores = [0,0];
+            break
+        }
     }
     var update = function update(){
         switch (state.turnPhase){ /// CHECK IF THE PHASE IS OVER
@@ -370,7 +382,7 @@ const GameController = function GameController(arguments){
 
                 if(endState.end){ // if the end goal achieved
                     // set the message to the
-                    state.messageBox.setMessage("Player " + (endState.winner+1) + "WINS!"); // put instructions for the players
+                    state.messageBox.setMessage("Player " + (endState.winner+1) + " WINS!"); // put instructions for the players
                     state.messageBox.toggleShow(true)   // show the message on screen
 
                     // reset the entire game
