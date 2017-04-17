@@ -314,6 +314,8 @@ const GameController = function GameController(arguments){
         phaseComplete: false,
         satelliteStolen: undefined,
         scores: [0,0]
+        // endGame flags
+
     }
     var reset = function reset(){
         
@@ -359,25 +361,38 @@ const GameController = function GameController(arguments){
                 // empty the oppositions loot from the satellite
                 // give it to the player
                 var stolenPoints = state.satellites[state.satelliteStolen].stealLoot(1-state.activePlayer)
-                console.log("points stolen: ", stolenPoints);
                 state.scores[state.activePlayer] += stolenPoints;
 
-                console.log("score: Player 1 ", state.scores[0], " | Player 2 ",state.scores[1])
-                state.messageBox.setMessage(" Plunder stolen: " + stolenPoints + ". Next Players Turn"); // put instructions for the players
-                state.messageBox.toggleShow(true)   // show the message on screen
-                state.activePlayer = 1-state.activePlayer; // shift to the next player
-                
-                //reset the flags for phase/round end
-                state.satelliteStolen = undefined;
-                state.satellites.forEach(function(sat){
-                    sat.nextRound(); //TODO: change the active player on the satellites
-                })
 
-                // change the fire button posiion
-                state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
+                // check if the game is ended
 
-                state.turnPhase = 0
-                break;
+                var endState = endGame()
+
+                if(endState.end){ // if the end goal achieved
+                    // set the message to the
+                    state.messageBox.setMessage("Player " + (endState.winner+1) + "WINS!"); // put instructions for the players
+                    state.messageBox.toggleShow(true)   // show the message on screen
+
+                    // reset the entire game
+                }
+                else{// go to next round
+
+                    state.messageBox.setMessage(" Plunder stolen: " + stolenPoints + ". Next Players Turn"); // put instructions for the players
+                    state.messageBox.toggleShow(true)   // show the message on screen
+                    state.activePlayer = 1-state.activePlayer; // shift to the next player
+
+                    //reset the flags for phase/round end
+                    state.satelliteStolen = undefined;
+                    state.satellites.forEach(function(sat){
+                        sat.nextRound(); //TODO: change the active player on the satellites
+                    })
+
+                    // change the fire button posiion
+                    state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
+
+                    state.turnPhase = 0
+                    break;
+                }
         }
         
     }
@@ -386,6 +401,19 @@ const GameController = function GameController(arguments){
     }
     var setSatelliteStolen = function setSatelliteStolen(satelliteIndex){
         state.satelliteStolen = satelliteIndex;
+    }
+    var endGame = function endGame(){
+
+        var scoreDiff = state.scores[0]-state.scores[1];
+
+        if(Math.abs(scoreDiff) >= 10){
+            var winner;
+            if(scoreDiff > 0){winner = 0
+            }else{ winner = 1 }
+            return {end:true, winner:0}
+        }
+        return {end:false, winner:undefined}
+        
     }
     var drawScores = function drawScores(canvasCtx){
         canvasCtx.save();

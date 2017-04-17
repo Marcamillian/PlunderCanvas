@@ -53,8 +53,8 @@ const renderable = function renderable(state, additionalRender){
               canvasContext.restore()
             }
         },
-        toggleShow: function toggleShow(){
-          state.visible = !state.visible
+        toggleShow: function toggleShow(show){
+          state.visible = (show === undefined) ? state.visible = !state.visible : show
         } 
     }
 }
@@ -98,6 +98,7 @@ const moveToClick = function moveToClick(state){
 const reactToClick = function reactToClick(state, clickFunction){
   return{
     runClick: function runClick(clickPosition, clickArgs){
+      
       if( clickPosition.x < state.position.x - state.size.width/2
             || clickPosition.x > state.position.x + state.size.width/2){
               return false
