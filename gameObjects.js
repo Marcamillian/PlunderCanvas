@@ -22,7 +22,9 @@ const Satellite = function Satellite(arguments){
 
     }
     var reset = function reset(){
-        state = originalState
+        state.loot[0] = 0;
+        state.loot[1] = 0;
+        state.activePlayer = 0;
     }
     var clickFunction = function clickFunction(state, arguments){
         switch(arguments.phase){
@@ -74,6 +76,7 @@ const Satellite = function Satellite(arguments){
         exertForce: exertForce,
         nextRound: nextRound,
         update: update,
+        reset:reset,
         stealLoot: stealLoot}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
@@ -95,12 +98,13 @@ const Ship = function Ship(arguments){
 
     }
     var reset = function reset(){
-
+        state.rotation = 0;
     }
     var getAngle = function getAngle(){ return state.rotation}
     var getPos = function getPos(){return state.position}
     return Object.assign(
         { update:update,
+        reset:reset,
         getAngle: getAngle,
         getPos: getPos},
         renderable(state),
@@ -126,6 +130,7 @@ const ClickMarker = function ClickMarker(){
 
 const Probe = function Probe(){
     const defaultSpeed = 100;
+    const defaultLifetime = 9; // flight time in seconds
     var state = {
         visible: true,
         colour: '#ff69b4',
@@ -133,16 +138,18 @@ const Probe = function Probe(){
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:defaultSpeed},
-        exipred: false
+        exipred: false,
+        lifetime: defaultLifetime 
     }
-    var update = function update(){
-
+    var update = function update(timeDelta){
+        state.lifetime -= timeDelta;
     }
     var reset = function reset(arguments){
         state.position = (arguments == undefined) ? {x:200, y:20} : arguments.position;
         state.speed = {x:0,y:defaultSpeed};
         state.active = false;
         state.expired = false;
+        state.lifetime = defaultLifetime;
     }
     var trigger = function trigger(givenState, triggerArgs){
         if (triggerArgs.launchAngle) { state.speed = resolveLaunchAngle(triggerArgs.launchAngle) }
@@ -201,7 +208,7 @@ const FireButton = function FireButton(targetObject, triggerArgs){
 
     }
     var reset = function reset(){
-
+        state.position = {x:60, y:20};
     }
     var clickFunction = function clickFunction(state, clickArgs){
         targetObject.trigger(targetObject.getState(), clickArgs); // HACKY WAY ROUND THE CLOSURE
@@ -298,7 +305,6 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
 
 const GameController = function GameController(arguments){
     
-    console.log(arguments)
     var state = {
         // game state trackers
         activePlayer: 0,
@@ -313,8 +319,9 @@ const GameController = function GameController(arguments){
         satellitesToAdd: 10,
         phaseComplete: false,
         satelliteStolen: undefined,
-        scores: [0,0]
+        scores: [0,0],
         // endGame flags
+        gameOver: false
 
     }
     var reset = function reset(mode){
@@ -329,6 +336,8 @@ const GameController = function GameController(arguments){
                 state.phaseComplete = false;
                 state.satelliteStolen = undefined;
                 state.scores = [0,0];
+                state.fireButton.reset();
+                state.gameOver = false;
             break
         }
     }
@@ -384,8 +393,7 @@ const GameController = function GameController(arguments){
                     // set the message to the
                     state.messageBox.setMessage("Player " + (endState.winner+1) + " WINS!"); // put instructions for the players
                     state.messageBox.toggleShow(true)   // show the message on screen
-
-                    // reset the entire game
+                    state.gameOver = true;
                 }
                 else{// go to next round
 
@@ -401,7 +409,6 @@ const GameController = function GameController(arguments){
 
                     // change the fire button posiion
                     state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
-
                     state.turnPhase = 0
                     break;
                 }
@@ -441,14 +448,25 @@ const GameController = function GameController(arguments){
         canvasCtx.restore()
 
     }
+    var endAccepted = function endAccepted(){
+        if(state.gameOver){
+            reset("point_rush")  // reset the entire game
+        }
+    }
+    var gameEnded = function gameEnded(){
+        return state.gameOver;
+    }
     return Object.assign(
         { update:update,
+        reset:reset,
         nextPhase:nextPhase,
         getPhase: getPhase,
         getActivePlayer:getActivePlayer,
         satAdded: satAdded,
         setSatelliteStolen: setSatelliteStolen,
-        drawScores: drawScores},
+        drawScores: drawScores,
+        gameEnded : gameEnded,
+        endAccepted: endAccepted},
         stateReporter(state)
     )
 }

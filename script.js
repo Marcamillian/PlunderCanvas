@@ -131,6 +131,10 @@ var update = function update(timeStep){   // update the objects
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
         messageWindow.runClick(clickPos);
+
+        // check to see if the game needs resetting
+        if(gameController.gameEnded()){gameController.endAccepted()}
+
         return;
     }
 
@@ -197,6 +201,7 @@ var update = function update(timeStep){   // update the objects
                 });
 
                 probe.applyForce(appliedForce);
+                probe.update(timeStep);
 
                 // move if in bounds
                 if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.expire()};
