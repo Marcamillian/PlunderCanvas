@@ -105,7 +105,8 @@ function init(){
                                         fireButton: fireButton
     });
 
-
+    // create the AI opposition
+    aiPlayer = AIOpposition();
 
     // render the things;
     render(ctx);

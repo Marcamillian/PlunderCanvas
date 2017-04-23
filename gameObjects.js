@@ -503,3 +503,42 @@ const InfoPopUp = function InfoPopUp(arguments){
         reactToClick(state, clickFunction)
     )
 }
+
+// AI object to run the game
+const AIOpposition = function AIOpposition(){
+    var state = {
+        satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    }
+    // API INTERFACES
+    var update = function update(currentPlunderArray){
+        // phase 1
+        placeSatellite(currentPlunderArray)
+    }
+    var placeSatellite = function placeSatellite(currentPlunderArray){ // return the index of the satellite that I want
+        // if confident
+            // place loot concentrated in one place - no more than 10?
+            // loop through array to se where stuff already is 
+            // if even choose random (weighted towards the edge?)
+        //if not
+            // spread them around in ones or twos
+
+            // For now
+    }
+    var isConfident = function isConfident(scores){
+
+    }
+    // phase 1 - place satellites 
+        // what info it needs - where his stashes are
+        // how cocky you are (score difference)
+    // phase 2 - fire probe
+        // what info - where his stashes are
+        // where the player is suspicious of from previous
+    // phase 3 - select a satellite to steal from
+        // where you are suspicious of
+    return Object.assign(
+        {
+
+        },
+        stateReporter(state)
+    )
+}
