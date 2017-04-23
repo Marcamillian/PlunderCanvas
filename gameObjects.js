@@ -517,7 +517,7 @@ const AIOpposition = function AIOpposition(){
     // API INTERFACES
     var update = function update(currentPlunderArray){
         // phase 1
-        placeSatellite(currentPlunderArray)
+        // placeSatellite(currentPlunderArray)
     }
     var placeSatellite = function placeSatellite(currentPlunderArray){ // return the index of the satellite that I want
         // if confident
@@ -528,6 +528,9 @@ const AIOpposition = function AIOpposition(){
             // spread them around in ones or twos
 
             // For now
+    }
+    var getClickPos = function getClickPos(){
+        return {x:150,y:236}
     }
     var isConfident = function isConfident(scores){
 
@@ -541,8 +544,7 @@ const AIOpposition = function AIOpposition(){
     // phase 3 - select a satellite to steal from
         // where you are suspicious of
     return Object.assign(
-        {
-
+        {getClickPos: getClickPos
         },
         stateReporter(state)
     )

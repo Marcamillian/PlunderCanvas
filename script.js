@@ -127,9 +127,7 @@ var update = function update(timeStep){   // update the objects
 
     var activePlayer = gameController.getActivePlayer()
     var updateClickPos = (keysDown["click"]) ? {x: keysDown["click"].offsetX, y: keysDown["click"].offsetY} : undefined
-    var aiPlayer = gameController.isPlayerAI();
-    console.log(aiPlayer);
-
+    var isPlayerAi = gameController.isPlayerAI();
 
     // check if the message window is clicked so that you can hide it
     if(messageWindow.getVisible() && keysDown["click"]){
@@ -146,40 +144,42 @@ var update = function update(timeStep){   // update the objects
 
     switch(gameController.getPhase()){
         case 0: // setting score on satellites
-            // on a click
-            if(keysDown["click"]){
-
-                var clickPos = {    x: keysDown["click"].offsetX,
-                                    y: keysDown["click"].offsetY}
-
-                // check if a satellite was clicked
-                compSatellites.forEach( function(sat){    
-                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
-                        delete keysDown["click"];  // if it was remove the click as it is dealt with 
-                        gameController.satAdded();
-                    }
-                });
-
+            
+            if(isPlayerAi){ // if the ai players turn
+                updateClickPos = aiPlayer.getClickPos()
+            }else{
+                
             }
+
+            if(updateClickPos){ // if there is a click
+
+                    // check if a satellite was clicked
+                    compSatellites.forEach( function(sat){    
+                        if( sat.runClick(updateClickPos, {phase: gameController.getPhase()} ) ){
+                            delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                            gameController.satAdded();
+                        }
+                    });
+                    break
+                }
+
             break;
         case 1: // aiming and firing the probe
 
-            // on a click
-            if(keysDown["click"]){
-
-                var clickPos = {    x: keysDown["click"].offsetX,
-                                    y: keysDown["click"].offsetY}
-
-                // see if we are firing the probe - don't to anything else if it is
-                if(fireButton.runClick( clickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
-                    delete keysDown["click"]; 
-                    return
-                }
-
+            if(isPlayerAi){ // if the ai players turn - set a click position
+                updateClickPos = aiPlayer.getClickPos()
             }
 
-                // rotate the ship
-            if( keysDown["click"] && keysDown["move"] ){ // if there is a click
+             if(updateClickPos){
+                    // see if we are firing the probe - don't to anything else if it is
+                    if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
+                        delete keysDown["click"]; 
+                        return
+                    }
+                }
+
+            // rotate the ship
+            if( updateClickPos && keysDown["move"] ){ // if there is a click
                 var movePos = {    x: keysDown["move"].offsetX,
                                     y: keysDown["move"].offsetY
                 }
@@ -214,14 +214,18 @@ var update = function update(timeStep){   // update the objects
             }
             break;
         case 2: // choosing a satellite
-            if(keysDown["click"]){
 
-                var clickPos = {    x: keysDown["click"].offsetX,
-                                    y: keysDown["click"].offsetY}
+            if(isPlayerAi){ // if the ai players turn
+                updateClickPos = aiPlayer.getClickPos()
+            }else{  // if the players turn
+                
+            }
+
+            if(updateClickPos){
 
                 // check if a satellite was clicked
                 compSatellites.forEach( function(sat, index){    
-                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
+                    if( sat.runClick(updateClickPos, {phase: gameController.getPhase()} ) ){
                         gameController.setSatelliteStolen(index);
                         delete keysDown["click"];  // if it was remove the click as it is dealt with 
                     }
