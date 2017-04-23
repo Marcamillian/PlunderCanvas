@@ -128,6 +128,8 @@ var update = function update(timeStep){   // update the objects
     var activePlayer = gameController.getActivePlayer()
     var updateClickPos = (keysDown["click"]) ? {x: keysDown["click"].offsetX, y: keysDown["click"].offsetY} : undefined
     var isPlayerAi = gameController.isPlayerAI();
+    var roundPhase = gameController.getPhase()
+
 
     // check if the message window is clicked so that you can hide it
     if(messageWindow.getVisible() && keysDown["click"]){
@@ -142,11 +144,11 @@ var update = function update(timeStep){   // update the objects
         return;
     }
 
-    switch(gameController.getPhase()){
+    switch(roundPhase){
         case 0: // setting score on satellites
             
             if(isPlayerAi){ // if the ai players turn
-                updateClickPos = aiPlayer.getClickPos()
+                updateClickPos = aiPlayer.getClickPos(roundPhase)
             }else{
                 
             }
@@ -167,7 +169,14 @@ var update = function update(timeStep){   // update the objects
         case 1: // aiming and firing the probe
 
             if(isPlayerAi){ // if the ai players turn - set a click position
-                updateClickPos = aiPlayer.getClickPos()
+                updateClickPos = aiPlayer.getClickPos(roundPhase)
+                compPlayers[activePlayer].rotateToFace(updateClickPos);// turn to face
+                /*
+                if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
+                    delete keysDown["click"]; 
+                    break
+                }*/
+                break
             }
 
              if(updateClickPos){
@@ -179,7 +188,7 @@ var update = function update(timeStep){   // update the objects
                 }
 
             // rotate the ship
-            if( updateClickPos && keysDown["move"] ){ // if there is a click
+            if( !isPlayerAi && updateClickPos && keysDown["move"] ){ // if there is a click
                 var movePos = {    x: keysDown["move"].offsetX,
                                     y: keysDown["move"].offsetY
                 }
@@ -216,7 +225,7 @@ var update = function update(timeStep){   // update the objects
         case 2: // choosing a satellite
 
             if(isPlayerAi){ // if the ai players turn
-                updateClickPos = aiPlayer.getClickPos()
+                updateClickPos = aiPlayer.getClickPos(roundPhase)
             }else{  // if the players turn
                 
             }

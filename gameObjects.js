@@ -512,7 +512,10 @@ const InfoPopUp = function InfoPopUp(arguments){
 // AI object to run the game
 const AIOpposition = function AIOpposition(){
     var state = {
-        satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        fireButtonPos: {},
+        satellitePos: {x:150, y:236},
+        probeFired: false
     }
     // API INTERFACES
     var update = function update(currentPlunderArray){
@@ -529,8 +532,9 @@ const AIOpposition = function AIOpposition(){
 
             // For now
     }
-    var getClickPos = function getClickPos(){
-        return {x:150,y:236}
+    var getClickPos = function getClickPos(gamePhase){
+        console.log(gamePhase);
+        return state.satellitePos;
     }
     var isConfident = function isConfident(scores){
 
