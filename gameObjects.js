@@ -309,6 +309,7 @@ const GameController = function GameController(arguments){
         // game state trackers
         activePlayer: 0,
         turnPhase:0,
+        aiPlayer: arguments.ai,
         // game objects to manipulate
         satellites: arguments.satellites,
         players: arguments.players,
@@ -456,6 +457,9 @@ const GameController = function GameController(arguments){
     var gameEnded = function gameEnded(){
         return state.gameOver;
     }
+    var isPlayerAI = function isPlayerAI(){
+        return (state.aiPlayer && state.activePlayer == 1) ?  true : false;
+    }
     return Object.assign(
         { update:update,
         reset:reset,
@@ -466,7 +470,8 @@ const GameController = function GameController(arguments){
         setSatelliteStolen: setSatelliteStolen,
         drawScores: drawScores,
         gameEnded : gameEnded,
-        endAccepted: endAccepted},
+        endAccepted: endAccepted,
+        isPlayerAI: isPlayerAI},
         stateReporter(state)
     )
 }

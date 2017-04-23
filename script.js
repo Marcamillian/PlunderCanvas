@@ -102,7 +102,8 @@ function init(){
                                         satellites:compSatellites,
                                         probe: probe,
                                         messageBox: messageWindow,
-                                        fireButton: fireButton
+                                        fireButton: fireButton,
+                                        ai: true
     });
 
     // create the AI opposition
@@ -125,6 +126,10 @@ var reset = function reset(){         // reset the game
 var update = function update(timeStep){   // update the objects
 
     var activePlayer = gameController.getActivePlayer()
+    var updateClickPos = (keysDown["click"]) ? {x: keysDown["click"].offsetX, y: keysDown["click"].offsetY} : undefined
+    var aiPlayer = gameController.isPlayerAI();
+    console.log(aiPlayer);
+
 
     // check if the message window is clicked so that you can hide it
     if(messageWindow.getVisible() && keysDown["click"]){
