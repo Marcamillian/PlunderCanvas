@@ -221,7 +221,8 @@ const FireButton = function FireButton(targetObject, triggerArgs){
         reset:reset,
         setPos:setPos},
         renderable(state),
-        reactToClick(state, clickFunction)
+        reactToClick(state, clickFunction),
+        stateReporter(state)
     )
 }
 
@@ -533,7 +534,6 @@ const AIOpposition = function AIOpposition(){
             // For now
     }
     var getClickPos = function getClickPos(gamePhase){
-        console.log(gamePhase);
         return state.satellitePos;
     }
     var isConfident = function isConfident(scores){

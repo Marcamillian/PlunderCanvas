@@ -171,15 +171,18 @@ var update = function update(timeStep){   // update the objects
             if(isPlayerAi){ // if the ai players turn - set a click position
                 updateClickPos = aiPlayer.getClickPos(roundPhase)
                 compPlayers[activePlayer].rotateToFace(updateClickPos);// turn to face
-                /*
-                if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
-                    delete keysDown["click"]; 
-                    break
-                }*/
+                
+                if(!probe.isActive()){ // this isActive check is not working TODO:
+                    if(fireButton.runClick( {x:60, y:580} , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
+                        delete keysDown["click"];
+                        console.log("AI firing");
+                        break
+                    }
+                }
                 break
             }
 
-             if(updateClickPos){
+             if(updateClickPos && !probe.isActive()){
                     // see if we are firing the probe - don't to anything else if it is
                     if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
                         delete keysDown["click"]; 
