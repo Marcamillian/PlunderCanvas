@@ -5,6 +5,7 @@ var height;
 
 var then; // date() of previous frame 
 
+var gameController = {};
 var gameArea = {}; // object to contain the state of the play field and untility functions
 var compPlayers = []; // array of players
 var compSatellites = [];   // array of satellites
@@ -91,6 +92,21 @@ function init(){
     probe = Probe();
     fireButton = FireButton(probe);
 
+    // set up the messaging object
+    messageWindow = InfoPopUp( {    position:{x:200, y:300},
+                                    size:{width: canvas.width-10, height:canvas.height-100}
+                                    });
+
+    // pass all the objects to the controller
+    gameController = GameController({   players:compPlayers,
+                                        satellites:compSatellites,
+                                        probe: probe,
+                                        messageBox: messageWindow,
+                                        fireButton: fireButton
+    });
+
+
+
     // render the things;
     render(ctx);
 
@@ -107,64 +123,111 @@ var reset = function reset(){         // reset the game
 
 var update = function update(timeStep){   // update the objects
 
-    // probe movement && force update
-    if(probe.isActive()){
+    var activePlayer = gameController.getActivePlayer()
 
-        var probePos = probe.getPos()
-        var appliedForce = {x:0, y:0};
-
-        // force update
-        activeSats = gameArea.activeSatellites(probePos); // decide which are active
-        
-        compSatellites.forEach(function(sat){ // reset everything to not active
-            sat.setActive(false)
-        });
-        
-        activeSats.forEach(function(satIndex){      // make the right ones active
-            compSatellites[satIndex].setActive(true);
-            var thisForce =  compSatellites[satIndex].exertForce(probePos);
-            appliedForce.x += thisForce.x;
-            appliedForce.y += thisForce.y;
-        });
-
-        probe.applyForce(appliedForce);
-
-        // move if in bounds
-        if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.reset()};
-    }
-    
-    // on a click
-    if(keysDown["click"]){
+    // check if the message window is clicked so that you can hide it
+    if(messageWindow.getVisible() && keysDown["click"]){
 
         var clickPos = {    x: keysDown["click"].offsetX,
                             y: keysDown["click"].offsetY}
+        messageWindow.runClick(clickPos);
 
-        // see if we are firing the probe - don't to anything else if it is
-        if(fireButton.runClick( clickPos , {launchAngle:compPlayers[0].getAngle()})){
-            delete keysDown["click"]; 
-            return
-        }
+        // check to see if the game needs resetting
+        if(gameController.gameEnded()){gameController.endAccepted()}
 
-        // check if a satellite was clicked
-        compSatellites.forEach( function(sat){
-            if( sat.runClick(clickPos) ){
-                delete keysDown["click"];  // if it was remove the click as it is dealt with
-                return 
+        return;
+    }
+
+    switch(gameController.getPhase()){
+        case 0: // setting score on satellites
+            // on a click
+            if(keysDown["click"]){
+
+                var clickPos = {    x: keysDown["click"].offsetX,
+                                    y: keysDown["click"].offsetY}
+
+                // check if a satellite was clicked
+                compSatellites.forEach( function(sat){    
+                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
+                        delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                        gameController.satAdded();
+                    }
+                });
+
             }
-        });
+            break;
+        case 1: // aiming and firing the probe
+
+            // on a click
+            if(keysDown["click"]){
+
+                var clickPos = {    x: keysDown["click"].offsetX,
+                                    y: keysDown["click"].offsetY}
+
+                // see if we are firing the probe - don't to anything else if it is
+                if(fireButton.runClick( clickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
+                    delete keysDown["click"]; 
+                    return
+                }
+
+            }
+
+                // rotate the ship
+            if( keysDown["click"] && keysDown["move"] ){ // if there is a click
+                var movePos = {    x: keysDown["move"].offsetX,
+                                    y: keysDown["move"].offsetY
+                }
+                compPlayers[activePlayer].rotateToFace(movePos);
+            }
+
+            // probe movement && force update
+            if(probe.isActive()){
+
+                var probePos = probe.getPos()
+                var appliedForce = {x:0, y:0};
+
+                // force update
+                activeSats = gameArea.activeSatellites(probePos); // decide which are active
+                
+                compSatellites.forEach(function(sat){ // reset everything to not active
+                    sat.setActive(false)
+                });
+
+                activeSats.forEach(function(satIndex){      // make the right ones active
+                    compSatellites[satIndex].setActive(true);
+                    var thisForce =  compSatellites[satIndex].exertForce(probePos);
+                    appliedForce.x += thisForce.x;
+                    appliedForce.y += thisForce.y;
+                });
+
+                probe.applyForce(appliedForce);
+                probe.update(timeStep);
+
+                // move if in bounds
+                if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.expire()};
+            }
+            break;
+        case 2: // choosing a satellite
+            if(keysDown["click"]){
+
+                var clickPos = {    x: keysDown["click"].offsetX,
+                                    y: keysDown["click"].offsetY}
+
+                // check if a satellite was clicked
+                compSatellites.forEach( function(sat, index){    
+                    if( sat.runClick(clickPos, {phase: gameController.getPhase()} ) ){
+                        gameController.setSatelliteStolen(index);
+                        delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                    }
+                });
+
+            }
+            
+            break
 
     }
 
-    // rotate the ship
-    if( keysDown["click"] && keysDown["move"] ){ // if there is a click
-        var movePos = {    x: keysDown["move"].offsetX,
-                            y: keysDown["move"].offsetY
-        }
-        compPlayers[0].rotateToFace(movePos);
-    }
-
-    // collision
-
+    gameController.update();
 
 }
 
@@ -175,10 +238,16 @@ var render = function render(canvasContext){
     canvasContext.fillStyle = "#000000";
     canvasContext.fillRect(0,0,canvas.width, canvas.height);
 
+    // draw scores
+    gameController.drawScores(canvasContext);
+
     // draw satellites
     compSatellites.forEach(function(sat){
         sat.draw(canvasContext);
     })
+
+    probe.draw(canvasContext);
+    fireButton.draw(canvasContext);
 
     // updated players using composition
     compPlayers.forEach(function(drawPlayer){
@@ -187,8 +256,9 @@ var render = function render(canvasContext){
 
     // render click marker
     //clickMarker.draw(canvasContext)
-    probe.draw(canvasContext);
-    fireButton.draw(canvasContext);
+    
+    // render the info window
+    messageWindow.draw(canvasContext);
 
 
 }
