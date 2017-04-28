@@ -145,13 +145,15 @@ var update = function update(timeStep){   // update the objects
     }
 
     switch(roundPhase){
-        case 0: // setting score on satellites
+        case 0: // PHASE 1 == setting score on satellites
             
+        // == AI LOGIC == 
+
             if(isPlayerAi){ // if the ai players turn
                 updateClickPos = aiPlayer.getClickPos(roundPhase)
-            }else{
-                
             }
+
+        // == PLAYER INTERACTION LOGIC == 
 
             if(updateClickPos){ // if there is a click
 
@@ -166,11 +168,16 @@ var update = function update(timeStep){   // update the objects
                 }
 
             break;
-        case 1: // aiming and firing the probe
+        case 1: // PHASE 2 === aiming and firing the probe
+
+
+        // == ALL OF THE AI LOGIC == 
 
             if(isPlayerAi){ // if the ai players turn - set a click position
-                updateClickPos = aiPlayer.getClickPos(roundPhase)
-                compPlayers[activePlayer].rotateToFace(updateClickPos);// turn to face
+                updateClickPos = aiPlayer.getClickPos(roundPhase) // get where the AI is targetting
+                                                                        // CASE 1 - placing satellites
+                                                                        // CASE 2 - clicking on the fire button
+                compPlayers[activePlayer].rotateToFace(updateClickPos); // turn to face -- only on satellite place
                 
                 if(!probe.isActive()){ // this isActive check is not working TODO:
                     if(fireButton.runClick( {x:60, y:580} , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
@@ -179,29 +186,33 @@ var update = function update(timeStep){   // update the objects
                         break
                     }
                 }
-                break
-            }
+            } else { // check for player interaction
 
-             if(updateClickPos && !probe.isActive()){
-                    // see if we are firing the probe - don't to anything else if it is
-                    if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){
-                        delete keysDown["click"]; 
+            // == ALL OF THE PLAYER INTERACTION LOGIC == 
+
+                if(updateClickPos && !probe.isActive()){ // if there is a click and the probe is not active
+                    if(fireButton.runClick( updateClickPos , {launchAngle:compPlayers[activePlayer].getAngle()})){  // see if the fire button is pressed
+                        delete keysDown["click"];   // if it is - don't do anthing else
                         return
                     }
                 }
 
-            // rotate the ship
-            if( !isPlayerAi && updateClickPos && keysDown["move"] ){ // if there is a click
-                var movePos = {    x: keysDown["move"].offsetX,
-                                    y: keysDown["move"].offsetY
+                // if it is a human players tune && there is a click down && the mouse if moved
+                if( !isPlayerAi && updateClickPos && keysDown["move"] ){ // if there is a click
+                    var movePos = {    x: keysDown["move"].offsetX,
+                                        y: keysDown["move"].offsetY
+                    }
+                    compPlayers[activePlayer].rotateToFace(movePos);    // rotate the ship towards the click
                 }
-                compPlayers[activePlayer].rotateToFace(movePos);
             }
 
-            // probe movement && force update
+        // === GENERAL PROBE UPDATE (movement / forces acting on) == 
+
+            // if the probe has been fired (is active)
             if(probe.isActive()){
 
                 var probePos = probe.getPos()
+                console.log(probePos); // logging this out
                 var appliedForce = {x:0, y:0};
 
                 // force update
@@ -225,7 +236,9 @@ var update = function update(timeStep){   // update the objects
                 if(gameArea.inBounds(probePos)){probe.move(timeStep)}else{probe.expire()};
             }
             break;
-        case 2: // choosing a satellite
+        case 2: // PHASE 3 == choosing a satellite to steal from 
+
+        // == AI LOGIC==
 
             if(isPlayerAi){ // if the ai players turn
                 updateClickPos = aiPlayer.getClickPos(roundPhase)
@@ -233,8 +246,9 @@ var update = function update(timeStep){   // update the objects
                 
             }
 
-            if(updateClickPos){
+        // == PLAYER INTERACTIONS == 
 
+            if(updateClickPos){
                 // check if a satellite was clicked
                 compSatellites.forEach( function(sat, index){    
                     if( sat.runClick(updateClickPos, {phase: gameController.getPhase()} ) ){
@@ -242,7 +256,6 @@ var update = function update(timeStep){   // update the objects
                         delete keysDown["click"];  // if it was remove the click as it is dealt with 
                     }
                 });
-
             }
             
             break

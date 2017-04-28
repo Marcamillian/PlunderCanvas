@@ -138,11 +138,12 @@ const Probe = function Probe(){
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:defaultSpeed},
-        exipred: false,
+        expired: false,
         lifetime: defaultLifetime 
     }
     var update = function update(timeDelta){
         state.lifetime -= timeDelta;
+        console.log(state.position)
     }
     var reset = function reset(arguments){
         state.position = (arguments == undefined) ? {x:200, y:20} : arguments.position;
