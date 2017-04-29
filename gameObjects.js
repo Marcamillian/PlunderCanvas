@@ -74,6 +74,9 @@ const Satellite = function Satellite(arguments){
     var getPlayerLoot = function getPlayerLoot(playerIndex){
         return state.loot[playerIndex]
     }
+    var getPosition = function getPosition(){
+        return Object.create(state.position);
+    }
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
@@ -81,7 +84,8 @@ const Satellite = function Satellite(arguments){
         update: update,
         reset:reset,
         stealLoot: stealLoot,
-        getPlayerLoot: getPlayerLoot}, // start Object
+        getPlayerLoot: getPlayerLoot,
+        getPosition: getPosition}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -534,7 +538,9 @@ const AIOpposition = function AIOpposition(){
         satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         fireButtonPos: {},
         satellitePos: {x:150, y:236},
-        probeFired: false
+        probeFired: false,
+        clickPoint: {x:150, y:236},
+        satellitesPlaced: 10
     }
     // API INTERFACES
     var update = function update(arguments){
@@ -542,8 +548,12 @@ const AIOpposition = function AIOpposition(){
 
         switch(arguments.roundPhase){
             case 0:
-                console.log(arguments)
                 // place loot ina  safe space? - where there isn't too much loot
+                var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+                while (myLoot[randomSat] > 10){randomSat = Math.floor(Math.random()*15.99)} // loop back round if there are too many on the satellite
+
+                state.clickPoint = compSatellites[randomSat].getPosition() // set the position
+
             break
             case 1:
                 // what probes I want to find out more about (ones that I am most suspicious of?)
@@ -567,7 +577,7 @@ const AIOpposition = function AIOpposition(){
             // For now
     }
     var getClickPos = function getClickPos(gamePhase){
-        return state.satellitePos;
+        return state.clickPoint;
     }
     var isConfident = function isConfident(scores){
 
