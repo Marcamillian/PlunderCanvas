@@ -71,13 +71,17 @@ const Satellite = function Satellite(arguments){
     var nextRound = function nextRound(){
         state.activePlayer = 1-state.activePlayer;
     }
+    var getPlayerLoot = function getPlayerLoot(playerIndex){
+        return state.loot[playerIndex]
+    }
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
         nextRound: nextRound,
         update: update,
         reset:reset,
-        stealLoot: stealLoot}, // start Object
+        stealLoot: stealLoot,
+        getPlayerLoot: getPlayerLoot}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -143,7 +147,7 @@ const Probe = function Probe(){
     }
     var update = function update(timeDelta){
         state.lifetime -= timeDelta;
-        console.log(state.position)
+        if(state.lifetime < 0){ state.expired = true}
     }
     var reset = function reset(arguments){
         state.position = (arguments == undefined) ? {x:200, y:20} : arguments.position;
@@ -410,7 +414,7 @@ const GameController = function GameController(arguments){
                         sat.nextRound(); //TODO: change the active player on the satellites
                     })
 
-                    // change the fire button posiion
+                    // change the fire button position
                     state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
                     state.turnPhase = 0
                     break;
@@ -462,6 +466,17 @@ const GameController = function GameController(arguments){
     var isPlayerAI = function isPlayerAI(){
         return (state.aiPlayer && state.activePlayer == 1) ?  true : false;
     }
+    var getScores = function getScores(activePlayer){
+        return {    mine: state.scores[activePlayer],
+                    theirs: state.scores[1-activePlayer]
+        }
+    }
+    var getLootArray = function getLootArray(playerIndex){
+        return state.satellites.map(function(satellite){
+            return satellite.getPlayerLoot(playerIndex)
+        })
+
+    }
     return Object.assign(
         { update:update,
         reset:reset,
@@ -473,7 +488,9 @@ const GameController = function GameController(arguments){
         drawScores: drawScores,
         gameEnded : gameEnded,
         endAccepted: endAccepted,
-        isPlayerAI: isPlayerAI},
+        isPlayerAI: isPlayerAI,
+        getScores: getScores,
+        getLootArray: getLootArray},
         stateReporter(state)
     )
 }
@@ -520,9 +537,24 @@ const AIOpposition = function AIOpposition(){
         probeFired: false
     }
     // API INTERFACES
-    var update = function update(currentPlunderArray){
-        // phase 1
-        // placeSatellite(currentPlunderArray)
+    var update = function update(arguments){
+        var myLoot = gameController.getLootArray(gameController.getActivePlayer()); // get what your loot looks like
+
+        switch(arguments.roundPhase){
+            case 0:
+                console.log(arguments)
+                // place loot ina  safe space? - where there isn't too much loot
+            break
+            case 1:
+                // what probes I want to find out more about (ones that I am most suspicious of?)
+                    // how much the probe position changed from last time
+                    // if probe didnt change acceloration much - make other places suspicious
+            break
+            case 2:
+                // pick somewhere to steal the one that I am most suspicious of
+                    // compare 
+            break
+        }
     }
     var placeSatellite = function placeSatellite(currentPlunderArray){ // return the index of the satellite that I want
         // if confident
@@ -549,7 +581,8 @@ const AIOpposition = function AIOpposition(){
     // phase 3 - select a satellite to steal from
         // where you are suspicious of
     return Object.assign(
-        {getClickPos: getClickPos
+        {getClickPos: getClickPos,
+        update:update
         },
         stateReporter(state)
     )

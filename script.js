@@ -150,6 +150,14 @@ var update = function update(timeStep){   // update the objects
         // == AI LOGIC == 
 
             if(isPlayerAi){ // if the ai players turn
+                // update the view of the field
+                
+                console.log("AI thinking")
+                aiPlayer.update({   roundPhase:roundPhase,
+                                    // satelliteArray: // some satellite array
+                                    currentPoints: gameController.getScores(activePlayer)
+                })
+
                 updateClickPos = aiPlayer.getClickPos(roundPhase)
             }
 
@@ -170,7 +178,6 @@ var update = function update(timeStep){   // update the objects
             break;
         case 1: // PHASE 2 === aiming and firing the probe
 
-
         // == ALL OF THE AI LOGIC == 
 
             if(isPlayerAi){ // if the ai players turn - set a click position
@@ -179,10 +186,9 @@ var update = function update(timeStep){   // update the objects
                                                                         // CASE 2 - clicking on the fire button
                 compPlayers[activePlayer].rotateToFace(updateClickPos); // turn to face -- only on satellite place
                 
-                if(!probe.isActive()){ // this isActive check is not working TODO:
+                if(!probe.isActive()){
                     if(fireButton.runClick( {x:60, y:580} , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
                         delete keysDown["click"];
-                        console.log("AI firing");
                         break
                     }
                 }
@@ -212,7 +218,7 @@ var update = function update(timeStep){   // update the objects
             if(probe.isActive()){
 
                 var probePos = probe.getPos()
-                console.log(probePos); // logging this out
+
                 var appliedForce = {x:0, y:0};
 
                 // force update
