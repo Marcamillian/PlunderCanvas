@@ -179,19 +179,22 @@ var update = function update(timeStep){   // update the objects
         case 1: // PHASE 2 === aiming and firing the probe
 
         // == ALL OF THE AI LOGIC == 
-
             if(isPlayerAi){ // if the ai players turn - set a click position
-                updateClickPos = aiPlayer.getClickPos(roundPhase) // get where the AI is targetting
-                                                                        // CASE 1 - placing satellites
-                                                                        // CASE 2 - clicking on the fire button
-                compPlayers[activePlayer].rotateToFace(updateClickPos); // turn to face -- only on satellite place
                 
-                if(!probe.isActive()){
+                if(!probe.isActive()){  // if its before the probe being fired
+                    aiPlayer.update({ roundPhase: roundPhase })
+                    //console.log("This thing");
+                    updateClickPos = aiPlayer.getClickPos(roundPhase) // get where the AI is targetting
+                                                                            // CASE 1 - placing satellites
+                                                                            // CASE 2 - clicking on the fire button
+                    compPlayers[activePlayer].rotateToFace(updateClickPos); // turn to face -- only on satellite place
+
                     if(fireButton.runClick( {x:60, y:580} , {launchAngle:compPlayers[activePlayer].getAngle()})){  // fire
                         delete keysDown["click"];
                         break
                     }
                 }
+
             } else { // check for player interaction
 
             // == ALL OF THE PLAYER INTERACTION LOGIC == 

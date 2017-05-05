@@ -588,8 +588,9 @@ const AIOpposition = function AIOpposition(){
 
                 // randomly guess at a position - between two adjacent satellites
                 var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
-
-
+                state.clickPoint = compSatellites[randomSat].getPosition()
+                console.log("fired at satellite: ", randomSat);
+ 
                 // what probes I want to find out more about (ones that I am most suspicious of?)
                     // how much the probe position changed from last time
                     // if probe didnt change acceloration much - make other places suspicious
