@@ -1,3 +1,8 @@
+/* TESTING IN NODE OPTIONS
+module.exports = {
+    foo:5
+}*/
+
 
 var probe = {
     x:0,
@@ -236,10 +241,12 @@ const FireButton = function FireButton(targetObject, triggerArgs){
 }
 
 const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
+    
     var state = {
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
         satFieldSize: {width:canvasWidth, height:canvasHeight},
+        satelliteNumber: 16
     }
     var reset = function reset(){
 
@@ -304,11 +311,30 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         
         return sats; // array of the nodes that will affect the probe
     }
+    var adjacentSat = function adjacentSat(focusSatellite, direction){ // focus satellite - between 0 & satelliteNumber
+        var adjSatellite = 0;
+        var sats = state.satelliteNumber;
+        var satsPerRow = sats / 4;
+        
+        switch(direction){
+            case 'above': adjSatellite = focusSatellite - satsPerRow;
+                break
+            case 'below': adjSatellite = focusSatellite + satsPerRow;
+                break
+            case 'left': adjSatellite = (focusSatellite%4 == 0) ? -1 : focusSatellite -1; 
+                break
+            case 'right': adjSatellite = ((focusSatellite+1)%4 == 0) ? -1 : focusSatellite + 1;
+                break
+        }
+
+        return (adjSatellite >= 0 && adjSatellite <= 15 ) ? adjSatellite : undefined
+    }
     return Object.assign(
         {gridPositions: gridPositions,
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
-        inBounds: inBounds},
+        inBounds: inBounds,
+        adjacentSat: adjacentSat},
         stateReporter(state)
     )
 }
@@ -534,6 +560,8 @@ const InfoPopUp = function InfoPopUp(arguments){
 
 // AI object to run the game
 const AIOpposition = function AIOpposition(){
+    const adjDirections = ["above", "below", "left", "right"]
+    
     var state = {
         satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         fireButtonPos: {},
@@ -547,15 +575,21 @@ const AIOpposition = function AIOpposition(){
         var myLoot = gameController.getLootArray(gameController.getActivePlayer()); // get what your loot looks like
 
         switch(arguments.roundPhase){
-            case 0:
-                // place loot ina  safe space? - where there isn't too much loot
+            case 0: // place satellites randomly
+                    // TODO : Feeling cocky or not
+                    // TODO : weight probability towards/away from certain satellites
+                // place loot in a safe space? - where there isn't too much loot
                 var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
                 while (myLoot[randomSat] > 10){randomSat = Math.floor(Math.random()*15.99)} // loop back round if there are too many on the satellite
 
                 state.clickPoint = compSatellites[randomSat].getPosition() // set the position
-
             break
             case 1:
+
+                // randomly guess at a position - between two adjacent satellites
+                var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+
+
                 // what probes I want to find out more about (ones that I am most suspicious of?)
                     // how much the probe position changed from last time
                     // if probe didnt change acceloration much - make other places suspicious
