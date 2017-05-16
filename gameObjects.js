@@ -1,9 +1,15 @@
+/* TESTING IN NODE OPTIONS
+module.exports = {
+    foo:5
+}*/
 
-var probe = {
-    x:0,
-    y:0
-}.prototype = {
-    speed:10
+const VectorTools = {
+    toUnitVector : function unitVector(component_X, component_Y){
+        // total magnitude
+        var magnitude = Math.sqrt(Math.pow(component_X, 2) + Math.pow(component_Y, 2));
+        return (magnitude) ? { x: component_X / magnitude, y: component_Y / magnitude} : // if magnitude exists
+                                {x:0, y:0}  // if magnitude 0
+    }
 }
 
 // SATELLITE OBJECT
@@ -71,13 +77,21 @@ const Satellite = function Satellite(arguments){
     var nextRound = function nextRound(){
         state.activePlayer = 1-state.activePlayer;
     }
+    var getPlayerLoot = function getPlayerLoot(playerIndex){
+        return state.loot[playerIndex]
+    }
+    var getPosition = function getPosition(){
+        return Object.create(state.position);
+    }
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
         nextRound: nextRound,
         update: update,
         reset:reset,
-        stealLoot: stealLoot}, // start Object
+        stealLoot: stealLoot,
+        getPlayerLoot: getPlayerLoot,
+        getPosition: getPosition}, // start Object
         renderable(state, [renderScore]), // behaviours
         reactToClick(state, clickFunction),
         stateReporter(state)
@@ -138,11 +152,12 @@ const Probe = function Probe(){
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:defaultSpeed},
-        exipred: false,
+        expired: false,
         lifetime: defaultLifetime 
     }
     var update = function update(timeDelta){
         state.lifetime -= timeDelta;
+        if(state.lifetime < 0){ state.expired = true}
     }
     var reset = function reset(arguments){
         state.position = (arguments == undefined) ? {x:200, y:20} : arguments.position;
@@ -221,15 +236,18 @@ const FireButton = function FireButton(targetObject, triggerArgs){
         reset:reset,
         setPos:setPos},
         renderable(state),
-        reactToClick(state, clickFunction)
+        reactToClick(state, clickFunction),
+        stateReporter(state)
     )
 }
 
 const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
+    
     var state = {
         gutters: {top:50, side:0},
         satelliteSpacing: {x:0,y:0},
         satFieldSize: {width:canvasWidth, height:canvasHeight},
+        satelliteNumber: 16
     }
     var reset = function reset(){
 
@@ -294,11 +312,30 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){ // TODO:
         
         return sats; // array of the nodes that will affect the probe
     }
+    var adjacentSat = function adjacentSat(focusSatellite, direction){ // focus satellite - between 0 & satelliteNumber
+        var adjSatellite = 0;
+        var sats = state.satelliteNumber;
+        var satsPerRow = sats / 4;
+        
+        switch(direction){
+            case 'above': adjSatellite = focusSatellite - satsPerRow;
+                break
+            case 'below': adjSatellite = focusSatellite + satsPerRow;
+                break
+            case 'left': adjSatellite = (focusSatellite%4 == 0) ? -1 : focusSatellite -1; 
+                break
+            case 'right': adjSatellite = ((focusSatellite+1)%4 == 0) ? -1 : focusSatellite + 1;
+                break
+        }
+
+        return (adjSatellite >= 0 && adjSatellite <= 15 ) ? adjSatellite : undefined
+    }
     return Object.assign(
         {gridPositions: gridPositions,
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
-        inBounds: inBounds},
+        inBounds: inBounds,
+        adjacentSat: adjacentSat},
         stateReporter(state)
     )
 }
@@ -307,8 +344,9 @@ const GameController = function GameController(arguments){
     
     var state = {
         // game state trackers
-        activePlayer: 0,
+        activePlayer: 0, // TODO: change this back to 0
         turnPhase:0,
+        aiPlayer: arguments.ai,
         // game objects to manipulate
         satellites: arguments.satellites,
         players: arguments.players,
@@ -407,7 +445,7 @@ const GameController = function GameController(arguments){
                         sat.nextRound(); //TODO: change the active player on the satellites
                     })
 
-                    // change the fire button posiion
+                    // change the fire button position
                     state.fireButton.setPos({x:60, y:20+(state.activePlayer*560)})
                     state.turnPhase = 0
                     break;
@@ -456,6 +494,20 @@ const GameController = function GameController(arguments){
     var gameEnded = function gameEnded(){
         return state.gameOver;
     }
+    var isPlayerAI = function isPlayerAI(){
+        return (state.aiPlayer && state.activePlayer == 1) ?  true : false;
+    }
+    var getScores = function getScores(activePlayer){
+        return {    mine: state.scores[activePlayer],
+                    theirs: state.scores[1-activePlayer]
+        }
+    }
+    var getLootArray = function getLootArray(playerIndex){
+        return state.satellites.map(function(satellite){
+            return satellite.getPlayerLoot(playerIndex)
+        })
+
+    }
     return Object.assign(
         { update:update,
         reset:reset,
@@ -466,7 +518,10 @@ const GameController = function GameController(arguments){
         setSatelliteStolen: setSatelliteStolen,
         drawScores: drawScores,
         gameEnded : gameEnded,
-        endAccepted: endAccepted},
+        endAccepted: endAccepted,
+        isPlayerAI: isPlayerAI,
+        getScores: getScores,
+        getLootArray: getLootArray},
         stateReporter(state)
     )
 }
@@ -501,5 +556,125 @@ const InfoPopUp = function InfoPopUp(arguments){
         setMessage: setMessage},
         renderable(state, [drawMessage]),
         reactToClick(state, clickFunction)
+    )
+}
+
+// AI object to run the game
+const AIOpposition = function AIOpposition(){
+    const adjDirections = ["above", "below", "left", "right"]
+    
+    var state = {
+        satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        probeFired: false,
+        clickPoint: {x:150, y:236},
+        satellitesPlaced: 10,
+        lastProbePos: {x:0, y:0},
+        lastProbeVector: {x:0, y:0},
+        changeVector: {x:0, y:0}
+    }
+    // API INTERFACES
+    var update = function update(arguments){
+        var myLoot = gameController.getLootArray(gameController.getActivePlayer()); // get what your loot looks like
+
+        switch(arguments.roundPhase){
+            case 0: // place satellites randomly
+                    // TODO : Feeling cocky or not
+                    // TODO : weight probability towards/away from certain satellites
+                // place loot in a safe space? - where there isn't too much loot
+                var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+                while (myLoot[randomSat] > 10){randomSat = Math.floor(Math.random()*15.99)} // loop back round if there are too many on the satellite
+
+                state.clickPoint = satellites[randomSat].getPosition() // set the position
+            break
+            case 1: // place & fire phase update
+
+                if(!arguments.probeFired){ // if not fired yet
+                    // randomly guess at a position - between two adjacent satellites
+                    var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+                    var adjDirection = adjDirections[Math.floor(Math.random()*4)]
+                    var adjacentSat = gameArea.adjacentSat(randomSat, adjDirection)
+                    state.clickPoint = satellites[randomSat].getPosition()
+
+                    // set up the current probe position as the first difference // TODO: Could we get the starting vector??
+                    //state.lastProbePos = arguments.probePos;
+
+                    console.log("pointing")
+                }else{ // if fired
+                    // the slope difference that is found - +ve if left -- -ve if right
+
+                    var probe_XChange = arguments.probePos.x - state.lastProbePos.x ;
+                    var probe_YChange = arguments.probePos.y - state.lastProbePos.y;
+
+                    var thisProbePos = arguments.probePos;
+                    var observedUnitVector = VectorTools.toUnitVector(probe_XChange, probe_YChange);
+
+                    // find the difference in the vectors
+                    var changeVector = VectorTools.toUnitVector( observedUnitVector.x - state.lastProbeVector.x,
+                                                                    observedUnitVector.y - state.lastProbeVector.y)
+
+                    // store the data for the next update
+                    state.lastProbePos.x = arguments.probePos.x;
+                    state.lastProbePos.y = arguments.probePos.y;
+                    state.lastProbeVector = observedUnitVector;
+                    state.changeVector = changeVector;
+                    
+                }
+
+                // what probes I want to find out more about (ones that I am most suspicious of?)
+                    // how much the probe position changed from last time
+                    // if probe didnt change acceloration much - make other places suspicious
+            break
+            case 2:
+                // pick somewhere to steal the one that I am most suspicious of
+                    // compare 
+
+                state.lastProbePos = {x:0, y:0}
+                state.lastProbeVector = {x:0, y:0}
+            break
+        }
+    }
+    var placeSatellite = function placeSatellite(currentPlunderArray){ // return the index of the satellite that I want
+        // if confident
+            // place loot concentrated in one place - no more than 10?
+            // loop through array to se where stuff already is 
+            // if even choose random (weighted towards the edge?)
+        //if not
+            // spread them around in ones or twos
+
+            // For now
+    }
+    var getClickPos = function getClickPos(gamePhase){
+        return state.clickPoint;
+    }
+    var isConfident = function isConfident(scores){
+
+    }
+    var drawSuspicion = function DrawSuspicion(ctx, probePosition){
+        
+        ctx.save();
+        ctx.strokeStyle = 'deeppink';
+
+        ctx.beginPath();
+        ctx.moveTo(probePosition.x, probePosition.y);
+        ctx.lineTo( probePosition.x + state.lastProbeVector.x * 50,
+                        probePosition.y + state.lastProbeVector.y * 50);
+        ctx.stroke();
+
+        ctx.beginPath()
+        ctx.moveTo(probePosition.x, probePosition.y)
+        ctx.strokeStyle = "yellow";
+        ctx.lineTo( probePosition.x + state.changeVector.x * 50,
+                        probePosition.y + state.changeVector.y * 50)
+        ctx.stroke();
+        
+
+        ctx.restore()
+    }
+    return Object.assign(
+        {getClickPos: getClickPos,
+        update:update,
+        drawSuspicion: drawSuspicion
+        },
+        stateReporter(state)
     )
 }
