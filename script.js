@@ -102,7 +102,8 @@ function init(){
                                         satellites:compSatellites,
                                         probe: probe,
                                         messageBox: messageWindow,
-                                        fireButton: fireButton
+                                        fireButton: fireButton,
+                                        gameMode: "point lead"
     });
 
 

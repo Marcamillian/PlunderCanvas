@@ -321,7 +321,8 @@ const GameController = function GameController(arguments){
         satelliteStolen: undefined,
         scores: [0,0],
         // endGame flags
-        gameOver: false
+        gameOver: false,
+        gameMode: "point lead"
 
     }
     var reset = function reset(mode){
@@ -423,6 +424,7 @@ const GameController = function GameController(arguments){
     }
     var endGame = function endGame(){
 
+        // point rush endgame - difference larger than 10 points
         var scoreDiff = state.scores[0]-state.scores[1];
 
         if(Math.abs(scoreDiff) >= 10){
@@ -432,6 +434,12 @@ const GameController = function GameController(arguments){
             return {end:true, winner:0}
         }
         return {end:false, winner:undefined}
+
+        // turn rush endgame - limit to number of turns
+
+        // point rush - first to 30 points
+
+        // treasure hoarder - 3 satellites with 10 plunder on 
         
     }
     var drawScores = function drawScores(canvasCtx){
@@ -456,6 +464,12 @@ const GameController = function GameController(arguments){
     var gameEnded = function gameEnded(){
         return state.gameOver;
     }
+    var setGameMode = function setGameMode(){
+        //var modes = ["point lead", "point rush", "round rush", "hoarder"];
+
+       // modes.indexOf(state.)
+       console.log(state.gameMode)
+    }
     return Object.assign(
         { update:update,
         reset:reset,
@@ -466,7 +480,8 @@ const GameController = function GameController(arguments){
         setSatelliteStolen: setSatelliteStolen,
         drawScores: drawScores,
         gameEnded : gameEnded,
-        endAccepted: endAccepted},
+        endAccepted: endAccepted,
+        setGameMode: setGameMode},
         stateReporter(state)
     )
 }

@@ -1,0 +1,22 @@
+{
+  "name": "plunder-canvas",
+  "version": "1.0.0",
+  "description": "Gravity Inspired Game - redesigned for web browser",
+  "main": "app.js",
+  "scripts": {
+    "test": "tape tapeTest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marcamillian/PlunderCanvas.git"
+  },
+  "author": "Marc Vousden",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Marcamillian/PlunderCanvas/issues"
+  },
+  "homepage": "https://github.com/Marcamillian/PlunderCanvas#readme",
+  "devDependencies": {
+    "tape": "^4.6.3"
+  }
+}
