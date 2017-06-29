@@ -305,7 +305,22 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){
 }
 
 const GameController = function GameController(arguments){
-    
+    const endGameLimits = {
+        pointLead:{
+            gap: 10
+        },
+        pointRush:{
+            goal: 25
+        },
+        roundRush:{
+            rounds: 10
+        },
+        hoarder: {
+            satCount: 3,
+            satLimit: 15
+        }
+    }
+
     var state = {
         // game state trackers
         activePlayer: 0,
@@ -447,7 +462,7 @@ const GameController = function GameController(arguments){
             case "point lead":  // get 10 points ahead of the opponent
                 var scoreDiff = state.scores[0]-state.scores[1];
 
-                if(Math.abs(scoreDiff) >= 10){
+                if(Math.abs(scoreDiff) >= endGameLimits.pointLead.gap){
                     var winner;
                     if(scoreDiff > 0){winner = 0
                     }else{ winner = 1 }
@@ -460,7 +475,7 @@ const GameController = function GameController(arguments){
                 var p1Score = state.scores[0];
                 var p2Score = state.scores[1];
 
-                if(p1Score >= 30 || p2Score >= 30 ){ // if someone over 30
+                if(p1Score >= 30 || p2Score >= endGameLimits.pointRush.goal ){ // if someone over 30
                     if(p1Score != p2Score){ // keep going if we have a draw
                         return {end: true, winner: (p1Score > p2Score) ? 0 : 1}
                     }
@@ -468,7 +483,7 @@ const GameController = function GameController(arguments){
 
                 return {end: false, winner: undefined} // game not ended
             case "round rush":
-                if (state.turns > 10){  // if we have gone 10 rounds
+                if (state.turns > endGameLimits.roundRush.rounds){  // if we have gone 10 rounds
                     var p1Score = state.scores[0];
                     var p2Score = state.scores[1];
                     if(p1Score != p2Score){ // make sure we don't have a draw
@@ -479,9 +494,9 @@ const GameController = function GameController(arguments){
             case "hoarder":
                 
                 // get array of tresaure on satellites/ // TODO: Write this endgame check
-                var passSats = satLootGreaterThanX(15);
+                var passSats = satLootGreaterThanX(endGameLimits.hoarder.satLimit);
 
-                if(passSats.p1 >= 3 || passSats.p2 >= 3){ // check that we have 3 passes
+                if(passSats.p1 >= endGameLimits.hoarder.satCount || passSats.p2 >= endGameLimits.hoarder.satCount){ // check that we have 3 passes
                     if(passSats.p1 != passSats.p2){ // check that we don't have the same amount of passes
                         return {end: true, winner: (passSats.p1 > passSats.p2) ? 0 : 1}
                     }
@@ -542,7 +557,7 @@ const GameController = function GameController(arguments){
             canvasCtx.save();
             canvasCtx.fillStyle = "#FFFFFF";
             canvasCtx.translate(95, 30);
-            canvasCtx.fillText("Round: "+ state.turns + "of 10", 0 , 0)
+            canvasCtx.fillText("Round: "+ state.turns + " of " + endGameLimits.roundRush.rounds, 0 , 0)
             canvasCtx.restore()
         }else if(state.gameMode == "hoarder"){
 
@@ -551,8 +566,8 @@ const GameController = function GameController(arguments){
             canvasCtx.save();
             canvasCtx.fillStyle = "#FFFFFF";
             canvasCtx.translate(95, 30);
-            canvasCtx.fillText("Have 3 satellites", 0 , 0)
-            canvasCtx.fillText("over 15", 0 , 10)
+            canvasCtx.fillText("Have "+ endGameLimits.hoarder.satCount+ " satellites", 0 , 0)
+            canvasCtx.fillText("over " + endGameLimits.hoarder.satLimit, 0 , 10)
 
             canvasCtx.translate(120, -10);
             canvasCtx.fillText("Qualifying Satellites:", 0 , 0)
@@ -561,7 +576,7 @@ const GameController = function GameController(arguments){
             canvasCtx.restore()
         }else if(state.gameMode == "point lead"){
 
-            var qualifyingSats = satLootGreaterThanX(15);
+            var qualifyingSats = satLootGreaterThanX(endGameLimits.pointLead.gap);
 
             canvasCtx.save();
             canvasCtx.fillStyle = "#FFFFFF";
@@ -576,7 +591,7 @@ const GameController = function GameController(arguments){
             canvasCtx.save();
             canvasCtx.fillStyle = "#FFFFFF";
             canvasCtx.translate(95, 30);
-            canvasCtx.fillText("First to 30 points", 0 , 0)
+            canvasCtx.fillText("First to "+endGameLimits.pointRush.goal+" points", 0 , 0)
             canvasCtx.restore()
         }
 
