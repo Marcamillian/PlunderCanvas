@@ -241,6 +241,7 @@ var render = function render(canvasContext){
 
     // draw scores
     gameController.drawScores(canvasContext);
+    gameController.drawGameMode(canvasContext)
 
     // draw satellites
     compSatellites.forEach(function(sat){
