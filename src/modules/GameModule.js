@@ -40,6 +40,8 @@ const GameModule = function GameModule(dimUnits){
 
     }
 
+    // == Generic Function Calls
+
     // ! CALL INIT IMMEDIATELY
     var init = function init(dimUnits){
 
@@ -96,6 +98,7 @@ const GameModule = function GameModule(dimUnits){
         state.messageBox.draw(ctx)
 
         drawScores(ctx)
+        drawGameMode(ctx)
 
     }
     var reset = function reset(mode){
@@ -238,6 +241,9 @@ const GameModule = function GameModule(dimUnits){
         if(state.phaseComplete){ nextPhase() }
         
     }
+
+    // == Module specific calls
+
     var getActivePlayer = function getActivePlayer(){
         return state.activePlayer
     }
@@ -476,20 +482,11 @@ const GameModule = function GameModule(dimUnits){
         return {p1: p1Pass.length, p2: p2Pass.length}
     }
     return Object.assign(
-        { init: init,
-        update:update,
-        render: render,
-        reset:reset,
-        nextPhase:nextPhase,
-        getPhase: getPhase,
-        getActivePlayer:getActivePlayer,
-        satAdded: satAdded,
-        setSatelliteStolen: setSatelliteStolen,
-        drawScores: drawScores,
-        gameEnded : gameEnded,
-        endAccepted: endAccepted,
-        setGameMode: setGameMode,
-        drawGameMode: drawGameMode},
+        {
+            update:update,
+            render: render,
+            reset:reset
+        },
         behaviours.stateReporter(state)
     )
 }
