@@ -10,7 +10,7 @@ const Probe = function Probe(position){
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:defaultSpeed},
-        exipred: false,
+        expired: false,
         lifetime: defaultLifetime 
     }
     var init = function init(position){

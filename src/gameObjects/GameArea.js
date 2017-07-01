@@ -69,8 +69,8 @@ const GameArea = function GameArea(Ux, Uy){
 
     }
     var inBounds = function(position){
-        return (position.x > 5 && position.x < state.satFieldSize.width -5
-                && position.y > 5 && position.y < state.satFieldSize.height - 5) ? true : false
+        return (position.x > 5 && position.x < state.screenSize.width -5
+                && position.y > 5 && position.y < state.screenSize.height - 5) ? true : false
     }
     var getFieldSize = function getFieldSize(){
         return state.satFieldSize;
