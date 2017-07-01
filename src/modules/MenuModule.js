@@ -8,17 +8,54 @@ const MenuModule = function MenuModule(dimUnits){
 
     const init = function init(dimUnits){
     
-        var button = Button({
-            pos: {x:dimUnits.width*50, y:dimUnits.height*50},//x: dimUnits.width*50, y: dimUnits.height*20},
-            size: {width:dimUnits.width*20, height:dimUnits.height*20},//width: dimUnits.width*10, height:dimUnits*2.5},
-            clickFunction: function(){console.log("Been Clicked")}
+        var button_modeLead = Button({
+            pos: {x:dimUnits.width*50, y:dimUnits.height*50},
+            size: {width:dimUnits.width*20, height:dimUnits.height*20},
+            clickFunction: function(){console.log("Point Lead mode")}
         })
+        state.objects.push(button_modeLead)
 
-        state.objects.push(button)
+        var button_modePRush = Button({
+            pos: {x:dimUnits.width*100, y:dimUnits.height*50},
+            size: {width:dimUnits.width*20, height:dimUnits.height*20},
+            clickFunction: function(){console.log("Point Rush mode")}
+        })
+        state.objects.push(button_modePRush)
+
+        var button_modeRRush = Button({
+            pos: {x:dimUnits.width*150, y:dimUnits.height*50},
+            size: {width:dimUnits.width*20, height:dimUnits.height*20},
+            clickFunction: function(){console.log("Round Rush mode")}
+        })
+        state.objects.push(button_modeRRush)
+
+        var button_modeHoard = Button({
+            pos: {x:dimUnits.width*200, y:dimUnits.height*50},
+            size: {width:dimUnits.width*20, height:dimUnits.height*20},
+            clickFunction: function(){console.log("Hoard mode")}
+        })
+        state.objects.push(button_modeHoard)
+
+
     }(dimUnits)
 
-    const update = function update(timeStep, keysPressed){
+    const update = function update(timeStep, keysDown){
         
+        // Click interactions
+        if(keysDown["click"]){
+            var clickPos = {    x: keysDown['click'].offsetX,
+                                y: keysDown['click'].offsetY
+            }
+
+            // run the clicks on the objects
+            state.objects.forEach((obj)=>{
+                if(obj.runClick(clickPos)){
+                    delete keysDown['click']
+                }
+            })
+            
+        }
+
     }
 
     const render = function render(ctx){
