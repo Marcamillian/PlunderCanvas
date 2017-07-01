@@ -1,11 +1,4 @@
 
-var probe = {
-    x:0,
-    y:0
-}.prototype = {
-    speed:10
-}
-
 // SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
     const gravity = 5;
@@ -493,7 +486,7 @@ const GameController = function GameController(arguments){
                 return {end: false, winner: undefined}  // game not ended
             case "hoarder":
                 
-                // get array of tresaure on satellites/ // TODO: Write this endgame check
+                // get array of tresaure on satellites
                 var passSats = satLootGreaterThanX(endGameLimits.hoarder.satLimit);
 
                 if(passSats.p1 >= endGameLimits.hoarder.satCount || passSats.p2 >= endGameLimits.hoarder.satCount){ // check that we have 3 passes
