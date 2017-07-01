@@ -89,7 +89,7 @@ function init(){
     clickMarker = ClickMarker();
 
     // set up the probe 
-    probe = Probe();
+    probe = Probe(); // TODO - moved things to the gamemodule up to here
     fireButton = FireButton(probe);
 
     // set up the messaging object

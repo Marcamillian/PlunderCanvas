@@ -1,4 +1,6 @@
-const GameController = function GameController(arguments){
+gObjs = require('./../gameObjects/objectBundle.js');
+
+const GameController = function GameController(dimUnits){
     const endGameLimits = {
         pointLead:{
             gap: 10
@@ -21,11 +23,12 @@ const GameController = function GameController(arguments){
         turnPhase:0,
         turns: 0,
         // game objects to manipulate
-        satellites: arguments.satellites,
-        players: arguments.players,
-        probe: arguments.probe,
-        messageBox: arguments.messageBox,
-        fireButton: fireButton,
+        satellites: [],
+        players: [],
+        probe: undefined,
+        messageBox: undefined,
+        fireButton: undefined,
+        gameArea: undefined,
         // round end flags
         satellitesToAdd: 10,
         phaseComplete: false,
@@ -34,6 +37,58 @@ const GameController = function GameController(arguments){
         // endGame flags
         gameOver: false,
         gameMode: "point lead"
+
+    }
+
+    // ! CALL INIT IMMEDIATELY
+    var init = function init(dimUnits){
+
+        // create the game area
+        gameArea = gObjs.GameArea(dimUnits.width, dimUnits.height);
+
+        // create the players
+        state.players.push( gObjs.Ship({position: gameArea.layoutPlayer('p1')}))
+        state.players.push( gObjs.Ship({position: gameArea.layoutPlayer('p2')}))
+
+        // get the positionss on the satellites
+        var satPositions = gameArea.gridPositions();
+        // create the satellites
+        for (var i = 0; i < satPositions.length ; i++){
+            state.satellites.push( gObjs.Satellite({
+                position: satPositions[i],
+                size:{height:20, width:20}
+            }));
+        }
+
+        // create the probe
+        state.probe = gObjs.Probe(gameArea.layoutPlayer('p1'))
+        // create the fireButton
+
+        // create the message PopUp
+
+    }(dimUnits)
+
+    var render = function render(ctx){
+
+        // clear the background
+        // clear everything
+        ctx.save()
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0,0,dimUnits.width*400, dimUnits.height*600);
+        ctx.restore()
+
+        // draw satellites
+        state.satellites.forEach(function(sat){
+            sat.draw(ctx);
+        })
+
+        // draw satellites
+        state.players.forEach(function(ship){
+            ship.draw(ctx);
+        })
+
+        // draw probe
+        state.probe.draw(ctx);
 
     }
     var reset = function reset(mode){
@@ -313,7 +368,9 @@ const GameController = function GameController(arguments){
         return {p1: p1Pass.length, p2: p2Pass.length}
     }
     return Object.assign(
-        { update:update,
+        { init: init,
+        update:update,
+        render: render,
         reset:reset,
         nextPhase:nextPhase,
         getPhase: getPhase,

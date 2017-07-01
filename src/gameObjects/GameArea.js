@@ -1,11 +1,67 @@
 var behaviours = require('./../behaviours.js');
 
-const GameArea = function GameArea(canvasWidth, canvasHeight){
+const GameArea = function GameArea(Ux, Uy){
     var state = {
-        gutters: {top:50, side:0},
-        satelliteSpacing: {x:0,y:0},
-        satFieldSize: {width:canvasWidth, height:canvasHeight},
+        screenSize:{
+            width: undefined,
+            height: undefined
+        },
+        gutters: {
+            side:undefined,
+            top:undefined
+        },
+        satFieldSize: {
+            width: undefined,
+            height:undefined
+        },
+        satelliteSpacing: {
+            x: undefined,
+            y: undefined,
+        },
+        playerPos:{
+            p1: {
+                x: undefined,
+                y: undefined
+            },
+            p2: {
+                x: undefined,
+                y: undefined
+            }
+        }
+
     }
+    
+    // !! CALL INIT STRAIGHT AWAY
+    var init = function init(Ux, Uy){
+        // overall screen size
+        state.screenSize = {width: 400*Ux, height: 600*Uy}
+
+        // guters at the side so satellites arn't right on the edge
+        state.gutters = {
+            side:0*Ux,
+            top:50*Uy
+        }
+
+        // screen with the gutters taken out
+        state.satFieldSize = {
+            width: 400*Ux - 2*state.gutters.side,
+            height: 600*Uy - 2*state.gutters.top
+        }
+
+        //satellite spacing
+        state.satelliteSpacing = {
+            x: state.satFieldSize.width/4,
+            y: state.satFieldSize.height/4
+        }
+
+        // player placement
+        state.playerPos.p1.x = state.screenSize.width/2
+        state.playerPos.p1.y = state.gutters.top/2;
+        state.playerPos.p2.x = state.screenSize.width/2
+        state.playerPos.p2.y = state.screenSize.height - state.gutters.top/2;
+
+    }(Ux, Uy)
+
     var reset = function reset(){ // reset the areas for screen re-draw/ re-size
 
     }
@@ -22,10 +78,7 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){
     var gridPositions = function gridPositions(){
         
         var positions = [];
-        state.satelliteSpacing.x = (state.satFieldSize.width - (2*state.gutters.side)) / 4;
-        state.satelliteSpacing.y = (state.satFieldSize.height - (2*state.gutters.top)) / 4;
-        
-        
+
         // setup satellites
         for (var i = 0; i < 16 ; i++){  // rows
             positions.push({});
@@ -66,11 +119,16 @@ const GameArea = function GameArea(canvasWidth, canvasHeight){
         
         return sats; // array of the nodes that will affect the probe
     }
+    var layoutPlayer = function layoutPlayer(playerNumber){ // p1 or p2
+        return state.playerPos[playerNumber]
+    }
+
     return Object.assign(
         {gridPositions: gridPositions,
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
-        inBounds: inBounds},
+        inBounds: inBounds,
+        layoutPlayer: layoutPlayer},
         behaviours.stateReporter(state)
     )
 }

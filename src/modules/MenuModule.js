@@ -17,7 +17,6 @@ const init = function init(dimUnits){
 
 const update = function update(delta, keysPressed){
     
-    // REACT TO CLICKS
     /*
     objects.forEach((obj)=>{
         if(obj.runClick){

@@ -1,3 +1,5 @@
+var behaviours = require('./../behaviours.js');
+
 const Ship = function Ship(arguments){
     var state = {
         colour: "#FFFFFF",
@@ -20,9 +22,9 @@ const Ship = function Ship(arguments){
         reset:reset,
         getAngle: getAngle,
         getPos: getPos},
-        renderable(state),
-        turnToClick(state),
-        stateReporter(state)
+        behaviours.renderable(state),
+        behaviours.turnToClick(state),
+        behaviours.stateReporter(state)
     )
 }
 

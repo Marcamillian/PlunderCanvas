@@ -1,5 +1,6 @@
 // import the modules
 var menuModule = require('./modules/MenuModule.js');
+var GameModule = require('./modules/GameModule.js');
 
 // app wide variables
 var viewPort;
@@ -7,12 +8,15 @@ var viewPortDims = {
     height: 600,
     width: 400
 }
-viewPortDimUnits = {    // standardised to the ratio
+var viewPortDimUnits = {    // standardised to the ratio
     height: viewPortDims.height/600,
     width: viewPortDims.width/400
 }
 var keysDown = {};  // track the keys pressed
 var then;   // track the last frame time
+
+// module instance
+var gameModule = GameModule(viewPortDimUnits)
 
 var init = function init(){
     // create the viewport
@@ -22,16 +26,11 @@ var init = function init(){
     canvas.height = viewPortDims.height
     document.body.appendChild(canvas)
 
-    menuModule.init(viewPortDimUnits)
+    menuModule.init(viewPortDimUnits);
 
     // configure the modules 
         // GameModule -
-            // create the gameArea
-            // set up players
-            // get postions of the satellites
-            // set up satellites
-            // set up the message window -- make this part of the menu?
-            // pass all of these to the gameController
+
 
     // kick off the mainLoop
     then = Date.now();
@@ -60,7 +59,9 @@ var update = function update(){
 
 var render = function render(){
 
-    menuModule.render(viewPort, {width:viewPortDims.width/100, height:viewPortDims.height/100 })
+    //menuModule.render(viewPort, {width:viewPortDims.width/100, height:viewPortDims.height/100 })
+    gameModule.render(viewPort)
+    
     // render the appropriate module
     // menu
     // tutorial

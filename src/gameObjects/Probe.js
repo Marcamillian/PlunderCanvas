@@ -1,16 +1,23 @@
-const Probe = function Probe(){
+var behaviours = require('./../behaviours.js');
+
+const Probe = function Probe(position){
     const defaultSpeed = 100;
     const defaultLifetime = 9; // flight time in seconds
     var state = {
         visible: true,
         colour: '#ff69b4',
-        position: { x:200 , y:20 },
+        position: { x:undefined , y:undefined },
         size: {width: 10, height:10},
         active: false,
         speed:{x:0, y:defaultSpeed},
         exipred: false,
         lifetime: defaultLifetime 
     }
+    var init = function init(position){
+        state.position.x = position.x;
+        state.position.y = position.y
+    }(position)
+
     var update = function update(timeDelta){
         state.lifetime -= timeDelta;
     }
@@ -61,9 +68,9 @@ const Probe = function Probe(){
         setPosition: setPosition,
         expire: expire,
         isExpired: isExpired},
-        renderable(state),
-        stateReporter(state),
-        mover(state)
+        behaviours.renderable(state),
+        behaviours.stateReporter(state),
+        behaviours.mover(state)
     )
 }
 

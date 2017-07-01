@@ -1,3 +1,5 @@
+var behaviours = require('../behaviours.js')
+
 const Satellite = function Satellite(arguments){ 
     const gravity = 5;
     var state = {
@@ -73,9 +75,9 @@ const Satellite = function Satellite(arguments){
         reset:reset,
         stealLoot: stealLoot,
         getPlayerLoot: getPlayerLoot}, // start Object
-        renderable(state, [renderScore]), // behaviours
-        reactToClick(state, clickFunction),
-        stateReporter(state)
+        behaviours.renderable(state, [renderScore]), // behaviours
+        behaviours.reactToClick(state, clickFunction),
+        behaviours.stateReporter(state)
     )
 }
 
