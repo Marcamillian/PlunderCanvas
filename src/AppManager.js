@@ -33,7 +33,7 @@ var init = function init(){
     canvas.height = viewPortDims.height
     document.body.appendChild(canvas)
 
-    setUpControls()
+    setUpControls(canvas)
         
     // configure the modules 
         // GameModule -
@@ -56,13 +56,16 @@ var mainLoop = function mainLoop(){
     requestAnimationFrame(mainLoop)
 }
 
-var update = function update(){
+var update = function update(timeStep){
 
+    // handle all of the AppManagers inputs first
     if(keysDown[77]){
-        console.log("Change the menu")
         changeModules()
         delete keysDown[77]
     }
+
+    // update the active module
+    activeModule.update(timeStep, keysDown);    
     
    // update the appropriate module
     // menu
@@ -82,7 +85,7 @@ var render = function render(){
     // game
 }
 
-var setUpControls = function setUpControls(){
+var setUpControls = function setUpControls(canvas){
     console.log("Here is the window: " , window)
     // listen for keyDown
     window.addEventListener("keydown", function(e){
@@ -93,6 +96,18 @@ var setUpControls = function setUpControls(){
     window.addEventListener("keyup", function(e){
             delete keysDown[e.keyCode];
     }, false);
+
+    // add the event listeners for the mouse clicks
+    canvas.addEventListener("mousedown", function(e){
+        keysDown["click"] = e;
+    })
+    canvas.addEventListener("mouseup", function(e){
+        delete keysDown["click"];
+        delete keysDown["move"];
+    })
+    canvas.addEventListener("mousemove", function(e){
+        keysDown["move"] = e;
+    })
 
 }
 

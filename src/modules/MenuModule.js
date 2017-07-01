@@ -17,14 +17,8 @@ const MenuModule = function MenuModule(dimUnits){
         state.objects.push(button)
     }(dimUnits)
 
-    const update = function update(delta, keysPressed){
+    const update = function update(timeStep, keysPressed){
         
-        /*
-        objects.forEach((obj)=>{
-            if(obj.runClick){
-                obj.runClick(keysPressed)
-            }
-        })*/
     }
 
     const render = function render(ctx){

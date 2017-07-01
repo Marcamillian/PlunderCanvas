@@ -44,14 +44,14 @@ const GameModule = function GameModule(dimUnits){
     var init = function init(dimUnits){
 
         // create the game area
-        gameArea = gObjs.GameArea(dimUnits.width, dimUnits.height);
+        state.gameArea = gObjs.GameArea(dimUnits.width, dimUnits.height);
 
         // create the players
-        state.players.push( gObjs.Ship({position: gameArea.layoutPlayer('p1')}))
-        state.players.push( gObjs.Ship({position: gameArea.layoutPlayer('p2')}))
+        state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p1')}))
+        state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p2')}))
 
         // get the positionss on the satellites
-        var satPositions = gameArea.gridPositions();
+        var satPositions = state.gameArea.gridPositions();
         // create the satellites
         for (var i = 0; i < satPositions.length ; i++){
             state.satellites.push( gObjs.Satellite({
@@ -61,12 +61,12 @@ const GameModule = function GameModule(dimUnits){
         }
 
         // create the probe
-        state.probe = gObjs.Probe(gameArea.layoutPlayer('p1'))
+        state.probe = gObjs.Probe(state.gameArea.layoutPlayer('p1'))
         // create the fireButton
-        state.fireButton = gObjs.FireButton(gameArea.layoutFireButton('p1'), state.probe)
+        state.fireButton = gObjs.FireButton(state.gameArea.layoutFireButton('p1'), state.probe)
 
         // create the message PopUp
-        state.messageBox = gObjs.InfoPopUp(gameArea.layoutMessage())
+        state.messageBox = gObjs.InfoPopUp(state.gameArea.layoutMessage())
 
     }(dimUnits)
 
@@ -113,13 +113,120 @@ const GameModule = function GameModule(dimUnits){
             break
         }
     }
-    var update = function update(){
+    var update = function update(timeStep, keysDown){
+
+        // == HANDLE INPUTS
+
+        // Message window inputs
+        if(state.messageBox.getVisible() && keysDown["click"]){
+            var clickPos = {    x: keysDown["click"].offsetX,
+                                y: keysDown["click"].offsetY}
+            state.messageBox.runClick(clickPos);
+
+            // check to see if the game needs resetting
+            if( gameEnded() ){
+                endAccepted()
+            }
+            return;
+        }
+
+        // Phase relevant input checks
+        switch(getPhase()){
+            case 0: // setting score on satellites
+                // on a click
+                if(keysDown["click"]){
+
+                    var clickPos = {    x: keysDown["click"].offsetX,
+                                        y: keysDown["click"].offsetY}
+
+                    // check if a satellite was clicked
+                    state.satellites.forEach( function(sat){    
+                        if( sat.runClick(clickPos, {phase: getPhase()} ) ){
+                            delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                            satAdded();
+                        }
+                    });
+
+                }
+                break;
+            case 1: // aiming and firing the probe
+
+                // on a click
+                if(keysDown["click"]){
+
+                    var clickPos = {    x: keysDown["click"].offsetX,
+                                        y: keysDown["click"].offsetY}
+
+                    // see if we are firing the probe - don't to anything else if it is
+                    if(state.fireButton.runClick( clickPos , {launchAngle:state.players[state.activePlayer].getAngle()})){
+                        delete keysDown["click"]; 
+                        return
+                    }
+
+                }
+
+                    // rotate the ship
+                if( keysDown["click"] && keysDown["move"] ){ // if there is a click
+                    var movePos = {    x: keysDown["move"].offsetX,
+                                        y: keysDown["move"].offsetY
+                    }
+                    state.players[state.activePlayer].rotateToFace(movePos);
+                }
+
+                // probe movement && force update
+                if(state.probe.isActive()){
+
+                    var probePos = state.probe.getPos()
+                    var appliedForce = {x:0, y:0};
+
+                    // force update
+                    activeSats = state.gameArea.activeSatellites(probePos); // decide which are active
+                    
+                    state.satellites.forEach(function(sat){ // reset everything to not active
+                        sat.setActive(false)
+                    });
+
+                    activeSats.forEach(function(satIndex){      // make the right ones active
+                        state.satellites[satIndex].setActive(true);
+                        var thisForce =  state.satellites[satIndex].exertForce(probePos);
+                        appliedForce.x += thisForce.x;
+                        appliedForce.y += thisForce.y;
+                    });
+
+                    state.probe.applyForce(appliedForce);
+                    state.probe.update(timeStep);
+
+                    // move if in bounds
+                    if(state.gameArea.inBounds(probePos)){state.probe.move(timeStep)}else{state.probe.expire()};
+                }
+                break;
+            case 2: // choosing a satellite
+                if(keysDown["click"]){
+
+                    var clickPos = {    x: keysDown["click"].offsetX,
+                                        y: keysDown["click"].offsetY}
+
+                    // check if a satellite was clicked
+                    state.satellites.forEach( function(sat, index){    
+                        if( sat.runClick(clickPos, {phase: getPhase()} ) ){
+                            setSatelliteStolen(index);
+                            delete keysDown["click"];  // if it was remove the click as it is dealt with 
+                        }
+                    });
+
+                }
+                
+                break
+
+        }
+
+        // Check if the phase / game is over
         switch (state.turnPhase){ /// CHECK IF THE PHASE IS OVER
             case 0:
                 if(state.satellitesToAdd <= 0){ state.phaseComplete = true } // if enough loot handed out - go to next phase
                 break
             case 1:
-                if( probe.isExpired()){ state.phaseComplete = true; }
+                if( state.probe.isExpired()){ state.phaseComplete = true; }
                 break
             case 2:
                 if( state.satelliteStolen != undefined){ state.phaseComplete = true}
@@ -144,7 +251,7 @@ const GameModule = function GameModule(dimUnits){
                 break;
             case 1:
                 newProbePos = state.players[1-state.activePlayer].getPos()
-                probe.reset({position: {    x: newProbePos.x,
+                state.probe.reset({position: {    x: newProbePos.x,
                                             y: newProbePos.y
                 }})
                 state.turnPhase = 2
