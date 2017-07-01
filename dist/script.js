@@ -122,7 +122,7 @@ var reset = function reset(){         // reset the game
 }
 
 
-var update = function update(timeStep){   // update the objects
+var update = function update(timeStep){   // update the objects - move this to the gamemodule
 
     var activePlayer = gameController.getActivePlayer()
 
@@ -232,7 +232,7 @@ var update = function update(timeStep){   // update the objects
 
 }
 
-// render the scene
+// render the scene - move this into the GameModule
 var render = function render(canvasContext){
     
     // draw background

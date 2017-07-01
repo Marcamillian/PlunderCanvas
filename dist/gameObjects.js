@@ -1,11 +1,4 @@
 
-var probe = {
-    x:0,
-    y:0
-}.prototype = {
-    speed:10
-}
-
 // SATELLITE OBJECT
 const Satellite = function Satellite(arguments){ 
     const gravity = 5;

@@ -4,7 +4,8 @@
   "description": "Gravity Inspired Game - redesigned for web browser",
   "main": "app.js",
   "scripts": {
-    "test": "tape tapeTest.js"
+    "test": "tap UnitTests/*.js",
+    "build": "browserify ./src/mainScript.js > ./moduleDist/script.js"
   },
   "repository": {
     "type": "git",
