@@ -95,6 +95,8 @@ const GameModule = function GameModule(dimUnits){
         state.fireButton.draw(ctx)
         state.messageBox.draw(ctx)
 
+        drawScores(ctx)
+
     }
     var reset = function reset(mode){
         switch(mode){
@@ -270,7 +272,7 @@ const GameModule = function GameModule(dimUnits){
 
                     if(endState.end){ // if the end goal achieved
                         // set the message to the
-                        state.messageBox.setMessage("Player " + (endState.winner+1) + " WINS!"); // put instructions for the players
+                        state.messageBox.setMessage((endState.winner) + " WINS!"); // put instructions for the players
                         state.messageBox.toggleShow(true)   // show the message on screen
                         state.gameOver = true;
                     }
@@ -325,9 +327,9 @@ const GameModule = function GameModule(dimUnits){
 
                 if(Math.abs(scoreDiff) >= endGameLimits.pointLead.gap){
                     var winner;
-                    if(scoreDiff > 0){winner = 0
-                    }else{ winner = 1 }
-                    return {end:true, winner:0}
+                    if(scoreDiff > 0){winner = "p1"
+                    }else{ winner = "p2" }
+                    return {end:true, winner: winner}
                 }
 
                 return {end:false, winner:undefined}
@@ -338,7 +340,7 @@ const GameModule = function GameModule(dimUnits){
 
                 if(p1Score >= 30 || p2Score >= endGameLimits.pointRush.goal ){ // if someone over 30
                     if(p1Score != p2Score){ // keep going if we have a draw
-                        return {end: true, winner: (p1Score > p2Score) ? 0 : 1}
+                        return {end: true, winner: (p1Score > p2Score) ? "p1" : "p2"}
                     }
                 }
 
@@ -348,7 +350,7 @@ const GameModule = function GameModule(dimUnits){
                     var p1Score = state.scores[0];
                     var p2Score = state.scores[1];
                     if(p1Score != p2Score){ // make sure we don't have a draw
-                        return {end: true, winner: (p1Score > p2Score) ? 0 : 1}
+                        return {end: true, winner: (p1Score > p2Score) ? "p1" : "p2"}
                     }
                 }
                 return {end: false, winner: undefined}  // game not ended
@@ -359,22 +361,16 @@ const GameModule = function GameModule(dimUnits){
 
                 if(passSats.p1 >= endGameLimits.hoarder.satCount || passSats.p2 >= endGameLimits.hoarder.satCount){ // check that we have 3 passes
                     if(passSats.p1 != passSats.p2){ // check that we don't have the same amount of passes
-                        return {end: true, winner: (passSats.p1 > passSats.p2) ? 0 : 1}
+                        return {end: true, winner: (passSats.p1 > passSats.p2) ? 'p1' : 'p2'}
                     }
                 }
 
                 return {end: false, winner: undefined}  // game not ended
         }
         
-
-        // turn rush endgame - limit to number of turns
-
-        // point rush - first to 30 points
-
-        // treasure hoarder - 3 satellites with 10 plunder on 
-        
     }
     var drawScores = function drawScores(canvasCtx){
+
         canvasCtx.save();
         canvasCtx.fillStyle = "#FFFFFF";
         canvasCtx.translate(350, 20);

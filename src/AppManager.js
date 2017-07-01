@@ -86,7 +86,6 @@ var render = function render(){
 }
 
 var setUpControls = function setUpControls(canvas){
-    console.log("Here is the window: " , window)
     // listen for keyDown
     window.addEventListener("keydown", function(e){
         keysDown[e.keyCode] = true
