@@ -1,12 +1,17 @@
 var behaviours = require('./../behaviours.js');
 
-const FireButton = function FireButton(targetObject, triggerArgs){
+const FireButton = function FireButton(position, targetObject, triggerArgs){
     var state = {
         visible: true,
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
+    // !! INIT STRAIGHT AWAY
+    var init = function init(position){
+        state.position.x = position.x;
+        state.position.y = position.y
+    }(position)
     var update = function update(){
 
     }

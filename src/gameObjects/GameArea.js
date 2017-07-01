@@ -122,13 +122,24 @@ const GameArea = function GameArea(Ux, Uy){
     var layoutPlayer = function layoutPlayer(playerNumber){ // p1 or p2
         return state.playerPos[playerNumber]
     }
+    var layoutFireButton = function layoutFireButton(player){
+        return {x: Ux*60 ,y: Uy*20 }
+    }
+    var layoutMessage = function layoutMessage(){
+        return {    position: {x: Ux*200, y:Uy*300 },
+                    size: {width: Ux*(400-10), height: Uy*(600-10) }
+        }
+    }
 
     return Object.assign(
         {gridPositions: gridPositions,
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
         inBounds: inBounds,
-        layoutPlayer: layoutPlayer},
+        layoutPlayer: layoutPlayer,
+        layoutFireButton: layoutFireButton,
+        layoutMessage: layoutMessage
+        },
         behaviours.stateReporter(state)
     )
 }

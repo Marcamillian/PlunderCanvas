@@ -1,3 +1,5 @@
+var behaviours = require('./../behaviours.js')
+
 const InfoPopUp = function InfoPopUp(arguments){
     var state = {
         visible: false,
@@ -5,6 +7,9 @@ const InfoPopUp = function InfoPopUp(arguments){
         position: (arguments.position) ? arguments.position : {x:200,y:400},
         size: (arguments.size ) ? arguments.size : {width: 100, height: 200},
         message: "someText"
+    }
+    var init = function init(){
+        
     }
     var drawMessage = function drawMessage(canvasContext, state){
         canvasContext.save();
@@ -26,8 +31,8 @@ const InfoPopUp = function InfoPopUp(arguments){
     return Object.assign(
         {getVisible: getVisible,
         setMessage: setMessage},
-        renderable(state, [drawMessage]),
-        reactToClick(state, clickFunction)
+        behaviours.renderable(state, [drawMessage]),
+        behaviours.reactToClick(state, clickFunction)
     )
 }
 

@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // import the modules
-var menuModule = require('./modules/MenuModule.js');
+var MenuModule = require('./modules/MenuModule.js');
 var GameModule = require('./modules/GameModule.js');
 
 // app wide variables
@@ -13,11 +13,18 @@ var viewPortDimUnits = {    // standardised to the ratio
     height: viewPortDims.height/600,
     width: viewPortDims.width/400
 }
+
+// input variables
 var keysDown = {};  // track the keys pressed
+
+// timing variables
 var then;   // track the last frame time
 
 // module instance
 var gameModule = GameModule(viewPortDimUnits)
+var menuModule = MenuModule(viewPortDimUnits)
+// moduleManagement
+var activeModule = menuModule;
 
 var init = function init(){
     // create the viewport
@@ -27,8 +34,8 @@ var init = function init(){
     canvas.height = viewPortDims.height
     document.body.appendChild(canvas)
 
-    menuModule.init(viewPortDimUnits);
-
+    setUpControls()
+        
     // configure the modules 
         // GameModule -
 
@@ -51,6 +58,13 @@ var mainLoop = function mainLoop(){
 }
 
 var update = function update(){
+
+    if(keysDown[77]){
+        console.log("Change the menu")
+        changeModules()
+        delete keysDown[77]
+    }
+    
    // update the appropriate module
     // menu
     // tutorial
@@ -61,7 +75,7 @@ var update = function update(){
 var render = function render(){
 
     //menuModule.render(viewPort, {width:viewPortDims.width/100, height:viewPortDims.height/100 })
-    gameModule.render(viewPort)
+    activeModule.render(viewPort)
     
     // render the appropriate module
     // menu
@@ -70,20 +84,22 @@ var render = function render(){
 }
 
 var setUpControls = function setUpControls(){
-
+    console.log("Here is the window: " , window)
     // listen for keyDown
-    addEventListener("keyDown", function(e){
+    window.addEventListener("keydown", function(e){
         keysDown[e.keyCode] = true
     }, false);
 
     // listen for keyUp
-    addEventListener("keyup", function(e){
+    window.addEventListener("keyup", function(e){
             delete keysDown[e.keyCode];
     }, false);
 
 }
 
-
+var changeModules = function changeModules(){
+    return activeModule = (activeModule == menuModule) ? gameModule : menuModule
+}
 module.exports = {
     init: init,
     mainLoop: mainLoop
@@ -245,13 +261,18 @@ module.exports = ClickMarker;
 },{"./../behaviours.js":2}],5:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
-const FireButton = function FireButton(targetObject, triggerArgs){
+const FireButton = function FireButton(position, targetObject, triggerArgs){
     var state = {
         visible: true,
         colour: '#0000ff',
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
+    // !! INIT STRAIGHT AWAY
+    var init = function init(position){
+        state.position.x = position.x;
+        state.position.y = position.y
+    }(position)
     var update = function update(){
 
     }
@@ -399,19 +420,32 @@ const GameArea = function GameArea(Ux, Uy){
     var layoutPlayer = function layoutPlayer(playerNumber){ // p1 or p2
         return state.playerPos[playerNumber]
     }
+    var layoutFireButton = function layoutFireButton(player){
+        return {x: Ux*60 ,y: Uy*20 }
+    }
+    var layoutMessage = function layoutMessage(){
+        return {    position: {x: Ux*200, y:Uy*300 },
+                    size: {width: Ux*(400-10), height: Uy*(600-10) }
+        }
+    }
 
     return Object.assign(
         {gridPositions: gridPositions,
         activeSatellites:activeSatellites,
         getFieldSize:getFieldSize,
         inBounds: inBounds,
-        layoutPlayer: layoutPlayer},
+        layoutPlayer: layoutPlayer,
+        layoutFireButton: layoutFireButton,
+        layoutMessage: layoutMessage
+        },
         behaviours.stateReporter(state)
     )
 }
 
 module.exports = GameArea
 },{"./../behaviours.js":2}],7:[function(require,module,exports){
+var behaviours = require('./../behaviours.js')
+
 const InfoPopUp = function InfoPopUp(arguments){
     var state = {
         visible: false,
@@ -419,6 +453,9 @@ const InfoPopUp = function InfoPopUp(arguments){
         position: (arguments.position) ? arguments.position : {x:200,y:400},
         size: (arguments.size ) ? arguments.size : {width: 100, height: 200},
         message: "someText"
+    }
+    var init = function init(){
+        
     }
     var drawMessage = function drawMessage(canvasContext, state){
         canvasContext.save();
@@ -440,13 +477,13 @@ const InfoPopUp = function InfoPopUp(arguments){
     return Object.assign(
         {getVisible: getVisible,
         setMessage: setMessage},
-        renderable(state, [drawMessage]),
-        reactToClick(state, clickFunction)
+        behaviours.renderable(state, [drawMessage]),
+        behaviours.reactToClick(state, clickFunction)
     )
 }
 
 module.exports = InfoPopUp
-},{}],8:[function(require,module,exports){
+},{"./../behaviours.js":2}],8:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 const Probe = function Probe(position){
@@ -679,7 +716,7 @@ init = function init(){
 },{"./AppManager.js":1}],13:[function(require,module,exports){
 gObjs = require('./../gameObjects/objectBundle.js');
 
-const GameController = function GameController(dimUnits){
+const GameModule = function GameModule(dimUnits){
     const endGameLimits = {
         pointLead:{
             gap: 10
@@ -742,8 +779,10 @@ const GameController = function GameController(dimUnits){
         // create the probe
         state.probe = gObjs.Probe(gameArea.layoutPlayer('p1'))
         // create the fireButton
+        state.fireButton = gObjs.FireButton(gameArea.layoutFireButton('p1'), state.probe)
 
         // create the message PopUp
+        state.messageBox = gObjs.InfoPopUp(gameArea.layoutMessage())
 
     }(dimUnits)
 
@@ -768,6 +807,9 @@ const GameController = function GameController(dimUnits){
 
         // draw probe
         state.probe.draw(ctx);
+
+        state.fireButton.draw(ctx)
+        state.messageBox.draw(ctx)
 
     }
     var reset = function reset(mode){
@@ -1065,56 +1107,61 @@ const GameController = function GameController(dimUnits){
     )
 }
 
-module.exports = GameController
+module.exports = GameModule
 },{"./../gameObjects/objectBundle.js":11}],14:[function(require,module,exports){
 Button = require('./../gameObjects/Button.js')
 FireButton = require('./../gameObjects/FireButton.js')
 
+const MenuModule = function MenuModule(dimUnits){
+    var state = {
+        objects : []
+    }
 
-var objects = [];
-
-const init = function init(dimUnits){
+    const init = function init(dimUnits){
     
-    var button = Button({
-        pos: {x:dimUnits.width*50, y:dimUnits.height*50},//x: dimUnits.width*50, y: dimUnits.height*20},
-        size: {width:dimUnits.width*20, height:dimUnits.height*20},//width: dimUnits.width*10, height:dimUnits*2.5},
-        clickFunction: function(){console.log("Been Clicked")}
-    })
+        var button = Button({
+            pos: {x:dimUnits.width*50, y:dimUnits.height*50},//x: dimUnits.width*50, y: dimUnits.height*20},
+            size: {width:dimUnits.width*20, height:dimUnits.height*20},//width: dimUnits.width*10, height:dimUnits*2.5},
+            clickFunction: function(){console.log("Been Clicked")}
+        })
 
-    objects.push(button)
-}
+        state.objects.push(button)
+    }(dimUnits)
 
-const update = function update(delta, keysPressed){
-    
-    /*
-    objects.forEach((obj)=>{
-        if(obj.runClick){
-            obj.runClick(keysPressed)
+    const update = function update(delta, keysPressed){
+        
+        /*
+        objects.forEach((obj)=>{
+            if(obj.runClick){
+                obj.runClick(keysPressed)
+            }
+        })*/
+    }
+
+    const render = function render(ctx){
+
+        // clear everything
+        ctx.save()
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0,0,dimUnits.width*400, dimUnits.height*600);
+        ctx.restore()
+
+        ctx.save();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.translate(dimUnits.width*50, dimUnits.height*50)
+        ctx.fillText("SOME MENU ITEM", 0,0)
+        ctx.restore()
+
+        state.objects.forEach((obj)=>{if(obj.draw){obj.draw(ctx)}})
+    }
+
+    return Object.assign(
+        {   init: init,
+            update: update,
+            render: render
         }
-    })*/
+    )
 }
 
-const render = function render(ctx, dimUnits){
-
-    // clear everything
-    ctx.save()
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,dimUnits.width*100, dimUnits.height*100);
-    ctx.restore()
-
-    ctx.save();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.translate(dimUnits.width*50, dimUnits.height*50)
-    ctx.fillText("SOME MENU ITEM", 0,0)
-    ctx.restore()
-
-    objects.forEach((obj)=>{if(obj.draw){obj.draw(ctx)}})
-}
-
-
-module.exports = {
-    init: init,
-    update: update,
-    render: render,
-}
+module.exports = MenuModule
 },{"./../gameObjects/Button.js":3,"./../gameObjects/FireButton.js":5}]},{},[12]);

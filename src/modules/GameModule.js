@@ -1,6 +1,6 @@
 gObjs = require('./../gameObjects/objectBundle.js');
 
-const GameController = function GameController(dimUnits){
+const GameModule = function GameModule(dimUnits){
     const endGameLimits = {
         pointLead:{
             gap: 10
@@ -63,8 +63,10 @@ const GameController = function GameController(dimUnits){
         // create the probe
         state.probe = gObjs.Probe(gameArea.layoutPlayer('p1'))
         // create the fireButton
+        state.fireButton = gObjs.FireButton(gameArea.layoutFireButton('p1'), state.probe)
 
         // create the message PopUp
+        state.messageBox = gObjs.InfoPopUp(gameArea.layoutMessage())
 
     }(dimUnits)
 
@@ -89,6 +91,9 @@ const GameController = function GameController(dimUnits){
 
         // draw probe
         state.probe.draw(ctx);
+
+        state.fireButton.draw(ctx)
+        state.messageBox.draw(ctx)
 
     }
     var reset = function reset(mode){
@@ -386,4 +391,4 @@ const GameController = function GameController(dimUnits){
     )
 }
 
-module.exports = GameController
+module.exports = GameModule
