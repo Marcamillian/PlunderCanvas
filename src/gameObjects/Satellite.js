@@ -67,6 +67,9 @@ const Satellite = function Satellite(arguments){
     var getPlayerLoot = function getPlayerLoot(playerIndex){
         return state.loot[playerIndex]
     }
+    var addLoot = function addLoot(player, loot){
+        state.loot[player] += (loot)? loot : 1
+    }
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
@@ -74,7 +77,8 @@ const Satellite = function Satellite(arguments){
         update: update,
         reset:reset,
         stealLoot: stealLoot,
-        getPlayerLoot: getPlayerLoot}, // start Object
+        getPlayerLoot: getPlayerLoot,
+        addLoot: addLoot}, // start Object
         behaviours.renderable(state, [renderScore]), // behaviours
         behaviours.reactToClick(state, clickFunction),
         behaviours.stateReporter(state)

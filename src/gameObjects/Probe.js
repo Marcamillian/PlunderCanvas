@@ -58,6 +58,7 @@ const Probe = function Probe(position){
     var isExpired = function (){
         return state.expired;
     }
+    
     return Object.assign(
         { update:update,
         reset: reset,

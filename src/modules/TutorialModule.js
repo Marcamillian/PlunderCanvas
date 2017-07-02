@@ -24,6 +24,7 @@ const TutorialModule = function TutorialModule(screenSize){
             })
             state.satellites.push(sat)
         })
+        state.satellites[0].addLoot(1,10)// put loot on sat 1
 
         // set up the probe
         state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
@@ -48,11 +49,19 @@ const TutorialModule = function TutorialModule(screenSize){
     }
 
     var update = function update(timeStep, keysDown){
+        // deal with the clicks
         if(keysDown['click']){
             var clickPos = {    x: keysDown['click'].offsetX,
                                 y: keysDown['click'].offsetY
             }
 
+            // see if we fired the probe
+            if(state.fireButton.runClick( clickPos , {launchAngle:state.player.getAngle()})){
+                delete keysDown["click"];
+                return
+            }
+
+            // move the ship
             if(keysDown["click"] && keysDown['move']){
                 var movePos = { x: keysDown['move'].offsetX,
                                 y: keysDown['move'].offsetY
@@ -61,6 +70,39 @@ const TutorialModule = function TutorialModule(screenSize){
                 state.player.rotateToFace(movePos);
             }
         }
+
+        // update the objects for time
+        if(state.probe.isActive()){
+
+            var probePos = state.probe.getPos()
+            var force = {x:0, y:0}
+
+
+            // === TODO: apply the forces to the probe
+            var activeSats = state.tutorialLayout.getActiveSatellites(probePos)
+
+            activeSats.forEach((satIndex)=>{
+                var thisForce = state.satellites[satIndex].exertForce(probePos)
+                force.x += thisForce.x;
+                force.y += thisForce.y
+            })  
+
+            state.probe.applyForce(force)
+            // === 
+
+            state.probe.update(timeStep) // update for expiry
+            state.probe.move(timeStep)  // move the probe
+
+            // out of bounds become inactive
+            if(!state.tutorialLayout.inBounds(probePos)){
+                state.probe.reset({position: state.tutorialLayout.layoutPlayer()})
+            }
+            // expired inactive
+            
+
+        }
+        // reset the probe if its out of bounds
+        
     }
 
     return Object.assign(

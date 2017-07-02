@@ -587,6 +587,7 @@ const Probe = function Probe(position){
     var isExpired = function (){
         return state.expired;
     }
+    
     return Object.assign(
         { update:update,
         reset: reset,
@@ -674,6 +675,9 @@ const Satellite = function Satellite(arguments){
     var getPlayerLoot = function getPlayerLoot(playerIndex){
         return state.loot[playerIndex]
     }
+    var addLoot = function addLoot(player, loot){
+        state.loot[player] += (loot)? loot : 1
+    }
     return Object.assign(
         {setActive: setActive,
         exertForce: exertForce,
@@ -681,7 +685,8 @@ const Satellite = function Satellite(arguments){
         update: update,
         reset:reset,
         stealLoot: stealLoot,
-        getPlayerLoot: getPlayerLoot}, // start Object
+        getPlayerLoot: getPlayerLoot,
+        addLoot: addLoot}, // start Object
         behaviours.renderable(state, [renderScore]), // behaviours
         behaviours.reactToClick(state, clickFunction),
         behaviours.stateReporter(state)
@@ -724,27 +729,30 @@ const Ship = function Ship(arguments){
 module.exports = Ship;
 },{"./../behaviours.js":2}],11:[function(require,module,exports){
 const TutorialLayout = function LayoutTutorial(screenSize){
+
     var state = {
-        absScreenSize:{ width:undefined, height: undefined },
+        screenSize:{ width:undefined, height: undefined },
         U:{ x:undefined, y: undefined },
         gutters:{ side: undefined, top: undefined},
         satFieldSize:{ width: undefined, height: undefined },
         satelliteSpacing:{ x: undefined, y:undefined},
-        playerPos:{ x: undefined, y: undefined}
+        playerPos:{ x: undefined, y: undefined},
+        gravRange: undefined
     }
 
     var init = function init(screenSize){
-        state.absScreenSize = {width: screenSize.width, height: screenSize.height};
-        state.U = { x: state.absScreenSize.width/100, y: state.absScreenSize.height/100}
+        state.screenSize = {width: screenSize.width, height: screenSize.height};
+        state.U = { x: state.screenSize.width/100, y: state.screenSize.height/100}
         state.gutters = { side: 0*state.U.x, top: 50*state.U.y};
         state.satFieldSize = { width: 100*state.U.x - 2*state.gutters.side,
                                 height: 100*state.U.y - 2*state.gutters.top
         }
         state.playerPos = { x: 50*state.U.x, y:90*state.U.y}
+        state.gravRange = 20*state.U.x;
     }(screenSize)
 
     var layoutPlayer = function layoutPlayer(){
-        return state.playerPos
+        return {x:state.playerPos.x, y: state.playerPos.y}
     }
 
     var layoutSatellites = function layoutSatellites(){ // produces a squa
@@ -761,14 +769,34 @@ const TutorialLayout = function LayoutTutorial(screenSize){
     }
 
     var screenSize = function screenSize(dim){
-        return (dim == 'width') ? state.absScreenSize.width : (dim =="height") ? state.absScreenSize.height: undefined
+        return (dim == 'width') ? state.screenSize.width : (dim =="height") ? state.screenSize.height: undefined
+    }
+
+    var inBounds = function inBounds(probePos){
+        return (probePos.x > 5 && probePos.x < state.screenSize.width -5
+                && probePos.y > 5 && probePos.y < state.screenSize.height - 5) ? true : false
+    }
+    var getActiveSatellites = function getActiveSatellites(probePos){
+        var satPositions = layoutSatellites();
+        var active = []
+
+        satPositions.forEach((sat, index)=>{
+            var a = probePos.x - sat.x;
+            var b = probePos.y - sat.y;
+            var c = Math.sqrt(Math.pow(a,2) + Math.pow(b,2))
+            if(c < state.gravRange){active.push(index)}
+        })
+        
+        return active
     }
 
     return Object.assign(
         {   layoutPlayer: layoutPlayer,
             screenSize: screenSize,
             layoutSatellites: layoutSatellites,
-            layoutFireButton: layoutFireButton
+            layoutFireButton: layoutFireButton,
+            inBounds: inBounds,
+            getActiveSatellites: getActiveSatellites
         }
     )
 }
@@ -1446,6 +1474,7 @@ const TutorialModule = function TutorialModule(screenSize){
             })
             state.satellites.push(sat)
         })
+        state.satellites[0].addLoot(1,10)// put loot on sat 1
 
         // set up the probe
         state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
@@ -1470,11 +1499,19 @@ const TutorialModule = function TutorialModule(screenSize){
     }
 
     var update = function update(timeStep, keysDown){
+        // deal with the clicks
         if(keysDown['click']){
             var clickPos = {    x: keysDown['click'].offsetX,
                                 y: keysDown['click'].offsetY
             }
 
+            // see if we fired the probe
+            if(state.fireButton.runClick( clickPos , {launchAngle:state.player.getAngle()})){
+                delete keysDown["click"];
+                return
+            }
+
+            // move the ship
             if(keysDown["click"] && keysDown['move']){
                 var movePos = { x: keysDown['move'].offsetX,
                                 y: keysDown['move'].offsetY
@@ -1483,6 +1520,39 @@ const TutorialModule = function TutorialModule(screenSize){
                 state.player.rotateToFace(movePos);
             }
         }
+
+        // update the objects for time
+        if(state.probe.isActive()){
+
+            var probePos = state.probe.getPos()
+            var force = {x:0, y:0}
+
+
+            // === TODO: apply the forces to the probe
+            var activeSats = state.tutorialLayout.getActiveSatellites(probePos)
+
+            activeSats.forEach((satIndex)=>{
+                var thisForce = state.satellites[satIndex].exertForce(probePos)
+                force.x += thisForce.x;
+                force.y += thisForce.y
+            })
+
+            state.probe.applyForce(force)
+            // === 
+
+            state.probe.update(timeStep) // update for expiry
+            state.probe.move(timeStep)  // move the probe
+
+            // out of bounds become inactive
+            if(!state.tutorialLayout.inBounds(probePos)){
+                state.probe.reset({position: state.tutorialLayout.layoutPlayer()})
+            }
+            // expired inactive
+            
+
+        }
+        // reset the probe if its out of bounds
+        
     }
 
     return Object.assign(
