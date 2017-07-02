@@ -4,13 +4,32 @@ const TutorialModule = function TutorialModule(screenSize){
     var state = {
         tutorialLayout: undefined,
         player: undefined,
-        satellites: []
+        satellites: [],
+        fireButon: undefined,
+        probe: undefined
     }
 
     var init = function init(screenSize){
+        // create the layout helper
         state.tutorialLayout = gObjs.TutorialLayout(screenSize)
-        state.player = gObjs.Ship(state.tutorialLayout.layoutPlayer());
+
+        // create the players ship
+        state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
         
+        // set up the satellites
+        var satPositions = state.tutorialLayout.layoutSatellites()
+        satPositions.forEach((satPos)=>{
+            var sat = gObjs.Satellite({ position: satPos,
+                                        size: {width: 20, height: 20}
+            })
+            state.satellites.push(sat)
+        })
+
+        // set up the probe
+        state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
+
+        // set up the fire button
+        state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
 
     }(screenSize)
 
@@ -23,6 +42,9 @@ const TutorialModule = function TutorialModule(screenSize){
         ctx.restore()
 
         state.player.draw(ctx)
+        state.satellites.forEach((sat)=>{sat.draw(ctx)})
+        state.fireButton.draw(ctx)
+        state.probe.draw(ctx)
     }
 
     var update = function update(timeStep, keysDown){

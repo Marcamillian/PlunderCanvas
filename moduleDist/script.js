@@ -747,13 +747,17 @@ const TutorialLayout = function LayoutTutorial(screenSize){
         return state.playerPos
     }
 
-    var layoutSatellites = function layoutSatellites(satWidth){ // produces a squa
+    var layoutSatellites = function layoutSatellites(){ // produces a squa
         return [
             {x: 33*state.U.x, y: 33*state.U.y},
             {x: 66*state.U.x, y: 33*state.U.y},
-            {x: 33*state.U.x, y: 66*state.U.y},
-            {x: 66*state.U.x, y: 66*state.U.y}
+            {x: 33*state.U.x, y: 33*state.U.y + 33*state.U.x},
+            {x: 66*state.U.x, y: 33*state.U.y + 33*state.U.x}
         ]
+    }
+
+    var layoutFireButton = function layoutFireButton(){
+        return {x:25*state.U.x, y: 90*state.U.y }
     }
 
     var screenSize = function screenSize(dim){
@@ -762,7 +766,9 @@ const TutorialLayout = function LayoutTutorial(screenSize){
 
     return Object.assign(
         {   layoutPlayer: layoutPlayer,
-            screenSize: screenSize
+            screenSize: screenSize,
+            layoutSatellites: layoutSatellites,
+            layoutFireButton: layoutFireButton
         }
     )
 }
@@ -1420,13 +1426,32 @@ const TutorialModule = function TutorialModule(screenSize){
     var state = {
         tutorialLayout: undefined,
         player: undefined,
-        satellites: []
+        satellites: [],
+        fireButon: undefined,
+        probe: undefined
     }
 
     var init = function init(screenSize){
+        // create the layout helper
         state.tutorialLayout = gObjs.TutorialLayout(screenSize)
-        state.player = gObjs.Ship(state.tutorialLayout.layoutPlayer());
+
+        // create the players ship
+        state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
         
+        // set up the satellites
+        var satPositions = state.tutorialLayout.layoutSatellites()
+        satPositions.forEach((satPos)=>{
+            var sat = gObjs.Satellite({ position: satPos,
+                                        size: {width: 20, height: 20}
+            })
+            state.satellites.push(sat)
+        })
+
+        // set up the probe
+        state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
+
+        // set up the fire button
+        state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
 
     }(screenSize)
 
@@ -1439,6 +1464,9 @@ const TutorialModule = function TutorialModule(screenSize){
         ctx.restore()
 
         state.player.draw(ctx)
+        state.satellites.forEach((sat)=>{sat.draw(ctx)})
+        state.fireButton.draw(ctx)
+        state.probe.draw(ctx)
     }
 
     var update = function update(timeStep, keysDown){

@@ -22,13 +22,17 @@ const TutorialLayout = function LayoutTutorial(screenSize){
         return state.playerPos
     }
 
-    var layoutSatellites = function layoutSatellites(satWidth){ // produces a squa
+    var layoutSatellites = function layoutSatellites(){ // produces a squa
         return [
             {x: 33*state.U.x, y: 33*state.U.y},
             {x: 66*state.U.x, y: 33*state.U.y},
-            {x: 33*state.U.x, y: 66*state.U.y},
-            {x: 66*state.U.x, y: 66*state.U.y}
+            {x: 33*state.U.x, y: 33*state.U.y + 33*state.U.x},
+            {x: 66*state.U.x, y: 33*state.U.y + 33*state.U.x}
         ]
+    }
+
+    var layoutFireButton = function layoutFireButton(){
+        return {x:25*state.U.x, y: 90*state.U.y }
     }
 
     var screenSize = function screenSize(dim){
@@ -37,7 +41,9 @@ const TutorialLayout = function LayoutTutorial(screenSize){
 
     return Object.assign(
         {   layoutPlayer: layoutPlayer,
-            screenSize: screenSize
+            screenSize: screenSize,
+            layoutSatellites: layoutSatellites,
+            layoutFireButton: layoutFireButton
         }
     )
 }
