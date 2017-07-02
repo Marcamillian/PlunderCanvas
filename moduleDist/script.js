@@ -2,6 +2,7 @@
 // import the modules
 var MenuModule = require('./modules/MenuModule.js');
 var GameModule = require('./modules/GameModule.js');
+var TutorialModule = require('./modules/TutorialModule.js');
 
 // app wide variables
 var viewPort;
@@ -22,7 +23,12 @@ var then;   // track the last frame time
 
 // module instance
 var gameModule = GameModule(viewPortDimUnits)
-var menuModule = MenuModule(viewPortDimUnits)
+var menuModule = MenuModule(viewPortDimUnits, {
+        modeToggle: gameModule.toggleGameMode,
+        startGame: this.changeModules // The function doesn't exist yet to pass
+})
+var tutorialModule = TutorialModule(viewPortDims)
+
 // moduleManagement
 var activeModule = menuModule;
 
@@ -63,6 +69,10 @@ var update = function update(timeStep){
     if(keysDown[77]){
         changeModules()
         delete keysDown[77]
+    }
+    if(keysDown[84]){
+        changeModules('tutorial')
+        delete keysDown[84]
     }
 
     // update the active module
@@ -111,14 +121,24 @@ var setUpControls = function setUpControls(canvas){
 
 }
 
-var changeModules = function changeModules(){
-    return activeModule = (activeModule == menuModule) ? gameModule : menuModule
+var changeModules = function changeModules(activateModule){
+    switch(activateModule){
+        case undefined: 
+            return activeModule = (activeModule == menuModule) ? gameModule : menuModule
+        case 'tutorial':
+            return activeModule = tutorialModule
+        case 'menu':
+            return activeModule = menuModule
+        case 'game':
+            return activeModule = gameModule
+    }
+    
 }
 module.exports = {
     init: init,
     mainLoop: mainLoop
 }
-},{"./modules/GameModule.js":13,"./modules/MenuModule.js":14}],2:[function(require,module,exports){
+},{"./modules/GameModule.js":14,"./modules/MenuModule.js":15,"./modules/TutorialModule.js":16}],2:[function(require,module,exports){
 const stateReporter = function stateReporter(state){
   return{
     getState: function getState(){
@@ -158,7 +178,7 @@ const turnToClick = function turnToClick(state){
   return{
     rotateToFace: function rotateToFace(clickPosition){ // click position {x:0 , y:0}
       var angle = this.getAngle2(clickPosition)
-      state.rotation =  angle;
+      return state.rotation =  angle;
     },
     getAngle2: function getAngle(clickPosition){ // vertical = 0 degrees
       var deltaX = state.position.x - clickPosition.x;
@@ -224,13 +244,22 @@ const mover = function mover(state){
   }
 }
 
+const dimLayout = function dimLayout(state){
+  return{
+    dim: function dim(direction){
+      return (direction == 'x') ? state.dimUnits.x : (direction == 'y') ? state.dimUnits.y : false
+    }
+  }
+}
+
 module.exports = {
     stateReporter: stateReporter,
     renderable: renderable,
     turnToClick: turnToClick,
     moveToClick: moveToClick,
     reactToClick: reactToClick,
-    mover: mover
+    mover: mover,
+    dimLayout: dimLayout
 }
 },{}],3:[function(require,module,exports){
 behaviours = require('./../behaviours.js');
@@ -362,7 +391,7 @@ const GameArea = function GameArea(Ux, Uy){
 
         //satellite spacing
         state.satelliteSpacing = {
-            x: state.satFieldSize.width/4,
+            x: state.satFieldSize.width/4, // 16 based
             y: state.satFieldSize.height/4
         }
 
@@ -392,10 +421,10 @@ const GameArea = function GameArea(Ux, Uy){
         var positions = [];
 
         // setup satellites
-        for (var i = 0; i < 16 ; i++){  // rows
+        for (var i = 0; i < 16 ; i++){  // rows // 16 based
             positions.push({});
-            positions[i].x = (state.satelliteSpacing.x /2) + i%4 * (state.satelliteSpacing.x);
-            positions[i].y = (state.satelliteSpacing.y /2)+ Math.floor(i/4)*(state.satelliteSpacing.y);
+            positions[i].x = (state.satelliteSpacing.x /2) + i%4 * (state.satelliteSpacing.x); // 16 based
+            positions[i].y = (state.satelliteSpacing.y /2)+ Math.floor(i/4)*(state.satelliteSpacing.y); // 16 based 
         }
 
         return positions.map(function(position){
@@ -416,17 +445,17 @@ const GameArea = function GameArea(Ux, Uy){
         }else if(column > 3){satForces.left = true
         }else{ satForces.right = true, satForces.left = true}
 
-        if( row < 1 ){ satForces.bottom = true;
-        }else if(row > 3){satForces.top = true
+        if( row < 1 ){ satForces.bottom = true; // 16 based
+        }else if(row > 3){satForces.top = true  // 16 based
         }else{ satForces.top = true, satForces.bottom = true}
 
         if(satForces.right){
-            if (satForces.top){ sats.push( ((row-1) *4) + column )}
-            if (satForces.bottom){sats.push( (row * 4)  + column )}
+            if (satForces.top){ sats.push( ((row-1) *4) + column )} // 16 based
+            if (satForces.bottom){sats.push( (row * 4)  + column )} // 16 based
         }
         if(satForces.left){
-            if(satForces.top){ sats.push( (row-1)*4 + (column-1) ) }
-            if(satForces.bottom){ sats.push( row*4 + (column-1) ) }
+            if(satForces.top){ sats.push( (row-1)*4 + (column-1) ) }    // 16 based
+            if(satForces.bottom){ sats.push( row*4 + (column-1) ) }     // 16 based
         }
         
         return sats; // array of the nodes that will affect the probe
@@ -694,6 +723,52 @@ const Ship = function Ship(arguments){
 
 module.exports = Ship;
 },{"./../behaviours.js":2}],11:[function(require,module,exports){
+const TutorialLayout = function LayoutTutorial(screenSize){
+    var state = {
+        absScreenSize:{ width:undefined, height: undefined },
+        U:{ x:undefined, y: undefined },
+        gutters:{ side: undefined, top: undefined},
+        satFieldSize:{ width: undefined, height: undefined },
+        satelliteSpacing:{ x: undefined, y:undefined},
+        playerPos:{ x: undefined, y: undefined}
+    }
+
+    var init = function init(screenSize){
+        state.absScreenSize = {width: screenSize.width, height: screenSize.height};
+        state.U = { x: state.absScreenSize.width/100, y: state.absScreenSize.height/100}
+        state.gutters = { side: 0*state.U.x, top: 50*state.U.y};
+        state.satFieldSize = { width: 100*state.U.x - 2*state.gutters.side,
+                                height: 100*state.U.y - 2*state.gutters.top
+        }
+        state.playerPos = { x: 50*state.U.x, y:90*state.U.y}
+    }(screenSize)
+
+    var layoutPlayer = function layoutPlayer(){
+        return state.playerPos
+    }
+
+    var layoutSatellites = function layoutSatellites(satWidth){ // produces a squa
+        return [
+            {x: 33*state.U.x, y: 33*state.U.y},
+            {x: 66*state.U.x, y: 33*state.U.y},
+            {x: 33*state.U.x, y: 66*state.U.y},
+            {x: 66*state.U.x, y: 66*state.U.y}
+        ]
+    }
+
+    var screenSize = function screenSize(dim){
+        return (dim == 'width') ? state.absScreenSize.width : (dim =="height") ? state.absScreenSize.height: undefined
+    }
+
+    return Object.assign(
+        {   layoutPlayer: layoutPlayer,
+            screenSize: screenSize
+        }
+    )
+}
+
+module.exports = TutorialLayout
+},{}],12:[function(require,module,exports){
 // bundle together all of the objects (working on individual files is easier)
 var ClickMarker = require('./ClickMarker.js')
 var FireButton = require('./FireButton.js');
@@ -702,6 +777,7 @@ var InfoPopUp = require('./InfoPopUp.js')
 var Probe = require('./Probe.js')
 var Satellite = require('./Satellite.js')
 var Ship = require('./Ship.js')
+var TutorialLayout = require('./TutorialLayout.js')
 
 module.exports = {
     ClickMarker: ClickMarker,
@@ -710,9 +786,10 @@ module.exports = {
     InfoPopUp: InfoPopUp,
     Probe: Probe,
     Satellite: Satellite,
-    Ship: Ship 
+    Ship: Ship,
+    TutorialLayout: TutorialLayout
 }
-},{"./ClickMarker.js":4,"./FireButton.js":5,"./GameArea.js":6,"./InfoPopUp.js":7,"./Probe.js":8,"./Satellite.js":9,"./Ship.js":10}],12:[function(require,module,exports){
+},{"./ClickMarker.js":4,"./FireButton.js":5,"./GameArea.js":6,"./InfoPopUp.js":7,"./Probe.js":8,"./Satellite.js":9,"./Ship.js":10,"./TutorialLayout.js":11}],13:[function(require,module,exports){
 var appManager = require('./AppManager.js');
 
 init = function init(){
@@ -727,7 +804,7 @@ init = function init(){
 
 
 
-},{"./AppManager.js":1}],13:[function(require,module,exports){
+},{"./AppManager.js":1}],14:[function(require,module,exports){
 gObjs = require('./../gameObjects/objectBundle.js');
 
 const GameModule = function GameModule(dimUnits){
@@ -823,12 +900,11 @@ const GameModule = function GameModule(dimUnits){
 
         // draw probe
         state.probe.draw(ctx);
-
-        state.fireButton.draw(ctx)
         state.messageBox.draw(ctx)
 
         drawScores(ctx)
         drawGameMode(ctx)
+        drawPhaseUI(ctx)
 
     }
     var reset = function reset(mode){
@@ -1105,21 +1181,6 @@ const GameModule = function GameModule(dimUnits){
         }
         
     }
-    var drawScores = function drawScores(canvasCtx){
-
-        canvasCtx.save();
-        canvasCtx.fillStyle = "#FFFFFF";
-        canvasCtx.translate(350, 20);
-        canvasCtx.fillText("Score: "+ state.scores[0], 0 , 0)
-        canvasCtx.restore()
-
-        canvasCtx.save();
-        canvasCtx.fillStyle = "#FFFFFF";
-        canvasCtx.translate(350, 580 );
-        canvasCtx.fillText("Score: "+ state.scores[1], 0 , 0)
-        canvasCtx.restore()
-
-    }
     var endAccepted = function endAccepted(){
         if(state.gameOver){
             reset("point_rush")  // reset the entire game
@@ -1133,7 +1194,7 @@ const GameModule = function GameModule(dimUnits){
 
         var newModeIndex = modes.indexOf(state.gameMode) + 1;
         state.gameMode = (newModeIndex >= modes.length) ? modes[0] : modes[newModeIndex]
-        
+ 
         return state.gameMode
     }
     var drawGameMode = function drawGameMode(canvasCtx){
@@ -1191,6 +1252,47 @@ const GameModule = function GameModule(dimUnits){
         // - qualifying satellites
 
     }
+    var drawScores = function drawScores(canvasCtx){
+
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 20);
+        canvasCtx.fillText("Score: "+ state.scores[0], 0 , 0)
+        canvasCtx.restore()
+
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 580 );
+        canvasCtx.fillText("Score: "+ state.scores[1], 0 , 0)
+        canvasCtx.restore()
+
+    }
+    var drawPhaseUI = function drawPhaseUI(ctx){
+        switch(state.turnPhase){
+            case 0:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Treasure to place: "+ state.satellitesToAdd, 0 , 0)
+                ctx.restore()
+                break;
+            case 1:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Aim and fire probe", 0 , 0)
+                ctx.restore()
+                state.fireButton.draw(ctx)
+                break;
+            case 2:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Steal treasure from opponent", 0 , 0)
+                ctx.restore()
+                break;
+        }
+    }
     var getSatelliteTreasure = function getSatelliteTreasure(){
         var p1Loot = [];
         var p2Loot = []
@@ -1215,51 +1317,49 @@ const GameModule = function GameModule(dimUnits){
         {
             update:update,
             render: render,
-            reset:reset
+            reset:reset,
+            toggleGameMode: setGameMode
         },
         behaviours.stateReporter(state)
     )
 }
 
 module.exports = GameModule
-},{"./../gameObjects/objectBundle.js":11}],14:[function(require,module,exports){
+},{"./../gameObjects/objectBundle.js":12}],15:[function(require,module,exports){
 Button = require('./../gameObjects/Button.js')
 FireButton = require('./../gameObjects/FireButton.js')
+Ship = require('./../gameObjects/Ship.js')
 
-const MenuModule = function MenuModule(dimUnits){
+const MenuModule = function MenuModule(dimUnits, callbackFunctions){
     var state = {
-        objects : []
+        objects : [],
+        pointer: undefined,
+        modeName: "point lead"
     }
 
     const init = function init(dimUnits){
     
-        var button_modeLead = Button({
+        console.log(callbackFunctions)
+
+        var button_modeToggle = Button({
             pos: {x:dimUnits.width*50, y:dimUnits.height*50},
             size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Point Lead mode")}
+            clickFunction: ()=>{state.modeName = callbackFunctions.modeToggle()}
         })
-        state.objects.push(button_modeLead)
+        state.objects.push(button_modeToggle)
 
-        var button_modePRush = Button({
-            pos: {x:dimUnits.width*100, y:dimUnits.height*50},
+        var button_startGame = Button({
+            pos: {x:dimUnits.width*50, y:dimUnits.height*100},
             size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Point Rush mode")}
+            clickFunction: ()=>{callbackFunctions.startGame()}
         })
-        state.objects.push(button_modePRush)
+        state.objects.push(button_startGame)
 
-        var button_modeRRush = Button({
-            pos: {x:dimUnits.width*150, y:dimUnits.height*50},
-            size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Round Rush mode")}
+        var ship_pointer = Ship({
+            position: {x: dimUnits.width*200, y:dimUnits.height*500}
         })
-        state.objects.push(button_modeRRush)
-
-        var button_modeHoard = Button({
-            pos: {x:dimUnits.width*200, y:dimUnits.height*50},
-            size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Hoard mode")}
-        })
-        state.objects.push(button_modeHoard)
+        state.objects.push(ship_pointer)
+        state.pointer = ship_pointer;
 
 
     }(dimUnits)
@@ -1274,10 +1374,14 @@ const MenuModule = function MenuModule(dimUnits){
 
             // run the clicks on the objects
             state.objects.forEach((obj)=>{
-                if(obj.runClick(clickPos)){
-                    delete keysDown['click']
+                if(obj.runClick){
+                    if(obj.runClick(clickPos)){ delete keysDown['click'] }
                 }
             })
+
+            if(state.pointer.rotateToFace(clickPos)){
+                delete keysDown['click']
+            }
             
         }
 
@@ -1293,8 +1397,8 @@ const MenuModule = function MenuModule(dimUnits){
 
         ctx.save();
         ctx.fillStyle = '#FFFFFF';
-        ctx.translate(dimUnits.width*50, dimUnits.height*50)
-        ctx.fillText("SOME MENU ITEM", 0,0)
+        ctx.translate(dimUnits.width*200, dimUnits.height*50)
+        ctx.fillText("MODE: " + state.modeName, 0,0)
         ctx.restore()
 
         state.objects.forEach((obj)=>{if(obj.draw){obj.draw(ctx)}})
@@ -1309,4 +1413,57 @@ const MenuModule = function MenuModule(dimUnits){
 }
 
 module.exports = MenuModule
-},{"./../gameObjects/Button.js":3,"./../gameObjects/FireButton.js":5}]},{},[12]);
+},{"./../gameObjects/Button.js":3,"./../gameObjects/FireButton.js":5,"./../gameObjects/Ship.js":10}],16:[function(require,module,exports){
+gObjs = require('./../gameObjects/objectBundle.js');
+
+const TutorialModule = function TutorialModule(screenSize){
+    var state = {
+        tutorialLayout: undefined,
+        player: undefined,
+        satellites: []
+    }
+
+    var init = function init(screenSize){
+        state.tutorialLayout = gObjs.TutorialLayout(screenSize)
+        state.player = gObjs.Ship(state.tutorialLayout.layoutPlayer());
+        
+
+    }(screenSize)
+
+    var render = function render(ctx){
+
+        // clear everything
+        ctx.save()
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0,0,state.tutorialLayout.screenSize('width'), state.tutorialLayout.screenSize('height'));
+        ctx.restore()
+
+        state.player.draw(ctx)
+    }
+
+    var update = function update(timeStep, keysDown){
+        if(keysDown['click']){
+            var clickPos = {    x: keysDown['click'].offsetX,
+                                y: keysDown['click'].offsetY
+            }
+
+            if(keysDown["click"] && keysDown['move']){
+                var movePos = { x: keysDown['move'].offsetX,
+                                y: keysDown['move'].offsetY
+                }
+
+                state.player.rotateToFace(movePos);
+            }
+        }
+    }
+
+    return Object.assign(
+        {
+            render: render,
+            update:update
+        }
+    )
+}
+
+module.exports = TutorialModule
+},{"./../gameObjects/objectBundle.js":12}]},{},[13]);

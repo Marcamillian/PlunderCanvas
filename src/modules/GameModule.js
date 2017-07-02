@@ -93,12 +93,11 @@ const GameModule = function GameModule(dimUnits){
 
         // draw probe
         state.probe.draw(ctx);
-
-        state.fireButton.draw(ctx)
         state.messageBox.draw(ctx)
 
         drawScores(ctx)
         drawGameMode(ctx)
+        drawPhaseUI(ctx)
 
     }
     var reset = function reset(mode){
@@ -375,21 +374,6 @@ const GameModule = function GameModule(dimUnits){
         }
         
     }
-    var drawScores = function drawScores(canvasCtx){
-
-        canvasCtx.save();
-        canvasCtx.fillStyle = "#FFFFFF";
-        canvasCtx.translate(350, 20);
-        canvasCtx.fillText("Score: "+ state.scores[0], 0 , 0)
-        canvasCtx.restore()
-
-        canvasCtx.save();
-        canvasCtx.fillStyle = "#FFFFFF";
-        canvasCtx.translate(350, 580 );
-        canvasCtx.fillText("Score: "+ state.scores[1], 0 , 0)
-        canvasCtx.restore()
-
-    }
     var endAccepted = function endAccepted(){
         if(state.gameOver){
             reset("point_rush")  // reset the entire game
@@ -403,7 +387,7 @@ const GameModule = function GameModule(dimUnits){
 
         var newModeIndex = modes.indexOf(state.gameMode) + 1;
         state.gameMode = (newModeIndex >= modes.length) ? modes[0] : modes[newModeIndex]
-        
+ 
         return state.gameMode
     }
     var drawGameMode = function drawGameMode(canvasCtx){
@@ -461,6 +445,47 @@ const GameModule = function GameModule(dimUnits){
         // - qualifying satellites
 
     }
+    var drawScores = function drawScores(canvasCtx){
+
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 20);
+        canvasCtx.fillText("Score: "+ state.scores[0], 0 , 0)
+        canvasCtx.restore()
+
+        canvasCtx.save();
+        canvasCtx.fillStyle = "#FFFFFF";
+        canvasCtx.translate(350, 580 );
+        canvasCtx.fillText("Score: "+ state.scores[1], 0 , 0)
+        canvasCtx.restore()
+
+    }
+    var drawPhaseUI = function drawPhaseUI(ctx){
+        switch(state.turnPhase){
+            case 0:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Treasure to place: "+ state.satellitesToAdd, 0 , 0)
+                ctx.restore()
+                break;
+            case 1:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Aim and fire probe", 0 , 0)
+                ctx.restore()
+                state.fireButton.draw(ctx)
+                break;
+            case 2:
+                ctx.save();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.translate(250, 40);
+                ctx.fillText("Steal treasure from opponent", 0 , 0)
+                ctx.restore()
+                break;
+        }
+    }
     var getSatelliteTreasure = function getSatelliteTreasure(){
         var p1Loot = [];
         var p2Loot = []
@@ -485,7 +510,8 @@ const GameModule = function GameModule(dimUnits){
         {
             update:update,
             render: render,
-            reset:reset
+            reset:reset,
+            toggleGameMode: setGameMode
         },
         behaviours.stateReporter(state)
     )

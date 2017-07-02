@@ -50,7 +50,7 @@ const GameArea = function GameArea(Ux, Uy){
 
         //satellite spacing
         state.satelliteSpacing = {
-            x: state.satFieldSize.width/4,
+            x: state.satFieldSize.width/4, // 16 based
             y: state.satFieldSize.height/4
         }
 
@@ -80,10 +80,10 @@ const GameArea = function GameArea(Ux, Uy){
         var positions = [];
 
         // setup satellites
-        for (var i = 0; i < 16 ; i++){  // rows
+        for (var i = 0; i < 16 ; i++){  // rows // 16 based
             positions.push({});
-            positions[i].x = (state.satelliteSpacing.x /2) + i%4 * (state.satelliteSpacing.x);
-            positions[i].y = (state.satelliteSpacing.y /2)+ Math.floor(i/4)*(state.satelliteSpacing.y);
+            positions[i].x = (state.satelliteSpacing.x /2) + i%4 * (state.satelliteSpacing.x); // 16 based
+            positions[i].y = (state.satelliteSpacing.y /2)+ Math.floor(i/4)*(state.satelliteSpacing.y); // 16 based 
         }
 
         return positions.map(function(position){
@@ -104,17 +104,17 @@ const GameArea = function GameArea(Ux, Uy){
         }else if(column > 3){satForces.left = true
         }else{ satForces.right = true, satForces.left = true}
 
-        if( row < 1 ){ satForces.bottom = true;
-        }else if(row > 3){satForces.top = true
+        if( row < 1 ){ satForces.bottom = true; // 16 based
+        }else if(row > 3){satForces.top = true  // 16 based
         }else{ satForces.top = true, satForces.bottom = true}
 
         if(satForces.right){
-            if (satForces.top){ sats.push( ((row-1) *4) + column )}
-            if (satForces.bottom){sats.push( (row * 4)  + column )}
+            if (satForces.top){ sats.push( ((row-1) *4) + column )} // 16 based
+            if (satForces.bottom){sats.push( (row * 4)  + column )} // 16 based
         }
         if(satForces.left){
-            if(satForces.top){ sats.push( (row-1)*4 + (column-1) ) }
-            if(satForces.bottom){ sats.push( row*4 + (column-1) ) }
+            if(satForces.top){ sats.push( (row-1)*4 + (column-1) ) }    // 16 based
+            if(satForces.bottom){ sats.push( row*4 + (column-1) ) }     // 16 based
         }
         
         return sats; // array of the nodes that will affect the probe

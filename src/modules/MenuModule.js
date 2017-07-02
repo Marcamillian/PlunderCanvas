@@ -1,40 +1,37 @@
 Button = require('./../gameObjects/Button.js')
 FireButton = require('./../gameObjects/FireButton.js')
+Ship = require('./../gameObjects/Ship.js')
 
-const MenuModule = function MenuModule(dimUnits){
+const MenuModule = function MenuModule(dimUnits, callbackFunctions){
     var state = {
-        objects : []
+        objects : [],
+        pointer: undefined,
+        modeName: "point lead"
     }
 
     const init = function init(dimUnits){
     
-        var button_modeLead = Button({
+        console.log(callbackFunctions)
+
+        var button_modeToggle = Button({
             pos: {x:dimUnits.width*50, y:dimUnits.height*50},
             size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Point Lead mode")}
+            clickFunction: ()=>{state.modeName = callbackFunctions.modeToggle()}
         })
-        state.objects.push(button_modeLead)
+        state.objects.push(button_modeToggle)
 
-        var button_modePRush = Button({
-            pos: {x:dimUnits.width*100, y:dimUnits.height*50},
+        var button_startGame = Button({
+            pos: {x:dimUnits.width*50, y:dimUnits.height*100},
             size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Point Rush mode")}
+            clickFunction: ()=>{callbackFunctions.startGame()}
         })
-        state.objects.push(button_modePRush)
+        state.objects.push(button_startGame)
 
-        var button_modeRRush = Button({
-            pos: {x:dimUnits.width*150, y:dimUnits.height*50},
-            size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Round Rush mode")}
+        var ship_pointer = Ship({
+            position: {x: dimUnits.width*200, y:dimUnits.height*500}
         })
-        state.objects.push(button_modeRRush)
-
-        var button_modeHoard = Button({
-            pos: {x:dimUnits.width*200, y:dimUnits.height*50},
-            size: {width:dimUnits.width*20, height:dimUnits.height*20},
-            clickFunction: function(){console.log("Hoard mode")}
-        })
-        state.objects.push(button_modeHoard)
+        state.objects.push(ship_pointer)
+        state.pointer = ship_pointer;
 
 
     }(dimUnits)
@@ -49,10 +46,14 @@ const MenuModule = function MenuModule(dimUnits){
 
             // run the clicks on the objects
             state.objects.forEach((obj)=>{
-                if(obj.runClick(clickPos)){
-                    delete keysDown['click']
+                if(obj.runClick){
+                    if(obj.runClick(clickPos)){ delete keysDown['click'] }
                 }
             })
+
+            if(state.pointer.rotateToFace(clickPos)){
+                delete keysDown['click']
+            }
             
         }
 
@@ -68,8 +69,8 @@ const MenuModule = function MenuModule(dimUnits){
 
         ctx.save();
         ctx.fillStyle = '#FFFFFF';
-        ctx.translate(dimUnits.width*50, dimUnits.height*50)
-        ctx.fillText("SOME MENU ITEM", 0,0)
+        ctx.translate(dimUnits.width*200, dimUnits.height*50)
+        ctx.fillText("MODE: " + state.modeName, 0,0)
         ctx.restore()
 
         state.objects.forEach((obj)=>{if(obj.draw){obj.draw(ctx)}})

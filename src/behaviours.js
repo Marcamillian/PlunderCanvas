@@ -37,7 +37,7 @@ const turnToClick = function turnToClick(state){
   return{
     rotateToFace: function rotateToFace(clickPosition){ // click position {x:0 , y:0}
       var angle = this.getAngle2(clickPosition)
-      state.rotation =  angle;
+      return state.rotation =  angle;
     },
     getAngle2: function getAngle(clickPosition){ // vertical = 0 degrees
       var deltaX = state.position.x - clickPosition.x;
@@ -103,11 +103,20 @@ const mover = function mover(state){
   }
 }
 
+const dimLayout = function dimLayout(state){
+  return{
+    dim: function dim(direction){
+      return (direction == 'x') ? state.dimUnits.x : (direction == 'y') ? state.dimUnits.y : false
+    }
+  }
+}
+
 module.exports = {
     stateReporter: stateReporter,
     renderable: renderable,
     turnToClick: turnToClick,
     moveToClick: moveToClick,
     reactToClick: reactToClick,
-    mover: mover
+    mover: mover,
+    dimLayout: dimLayout
 }

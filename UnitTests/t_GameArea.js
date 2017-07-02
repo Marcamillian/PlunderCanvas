@@ -6,8 +6,5 @@ test("Testing the grid layout", (t)=>{
 
     t.ok(gameArea, "Test it is created")
 
-    console.log(gameArea.gridPositions())
-
-
     t.end()
 })

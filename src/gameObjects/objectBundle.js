@@ -6,6 +6,7 @@ var InfoPopUp = require('./InfoPopUp.js')
 var Probe = require('./Probe.js')
 var Satellite = require('./Satellite.js')
 var Ship = require('./Ship.js')
+var TutorialLayout = require('./TutorialLayout.js')
 
 module.exports = {
     ClickMarker: ClickMarker,
@@ -14,5 +15,6 @@ module.exports = {
     InfoPopUp: InfoPopUp,
     Probe: Probe,
     Satellite: Satellite,
-    Ship: Ship 
+    Ship: Ship,
+    TutorialLayout: TutorialLayout
 }

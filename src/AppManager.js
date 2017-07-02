@@ -1,6 +1,7 @@
 // import the modules
 var MenuModule = require('./modules/MenuModule.js');
 var GameModule = require('./modules/GameModule.js');
+var TutorialModule = require('./modules/TutorialModule.js');
 
 // app wide variables
 var viewPort;
@@ -21,7 +22,12 @@ var then;   // track the last frame time
 
 // module instance
 var gameModule = GameModule(viewPortDimUnits)
-var menuModule = MenuModule(viewPortDimUnits)
+var menuModule = MenuModule(viewPortDimUnits, {
+        modeToggle: gameModule.toggleGameMode,
+        startGame: this.changeModules // The function doesn't exist yet to pass
+})
+var tutorialModule = TutorialModule(viewPortDims)
+
 // moduleManagement
 var activeModule = menuModule;
 
@@ -62,6 +68,10 @@ var update = function update(timeStep){
     if(keysDown[77]){
         changeModules()
         delete keysDown[77]
+    }
+    if(keysDown[84]){
+        changeModules('tutorial')
+        delete keysDown[84]
     }
 
     // update the active module
@@ -110,8 +120,18 @@ var setUpControls = function setUpControls(canvas){
 
 }
 
-var changeModules = function changeModules(){
-    return activeModule = (activeModule == menuModule) ? gameModule : menuModule
+var changeModules = function changeModules(activateModule){
+    switch(activateModule){
+        case undefined: 
+            return activeModule = (activeModule == menuModule) ? gameModule : menuModule
+        case 'tutorial':
+            return activeModule = tutorialModule
+        case 'menu':
+            return activeModule = menuModule
+        case 'game':
+            return activeModule = gameModule
+    }
+    
 }
 module.exports = {
     init: init,
