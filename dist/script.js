@@ -89,7 +89,7 @@ function init(){
     clickMarker = ClickMarker();
 
     // set up the probe 
-    probe = Probe();
+    probe = Probe(); 
     fireButton = FireButton(probe);
 
     // set up the messaging object
@@ -102,7 +102,8 @@ function init(){
                                         satellites:compSatellites,
                                         probe: probe,
                                         messageBox: messageWindow,
-                                        fireButton: fireButton
+                                        fireButton: fireButton,
+                                        gameMode: "point lead"
     });
 
 
@@ -121,7 +122,7 @@ var reset = function reset(){         // reset the game
 }
 
 
-var update = function update(timeStep){   // update the objects
+var update = function update(timeStep){   // update the objects - move this to the gamemodule
 
     var activePlayer = gameController.getActivePlayer()
 
@@ -231,7 +232,7 @@ var update = function update(timeStep){   // update the objects
 
 }
 
-// render the scene
+// render the scene - move this into the GameModule
 var render = function render(canvasContext){
     
     // draw background
@@ -240,6 +241,7 @@ var render = function render(canvasContext){
 
     // draw scores
     gameController.drawScores(canvasContext);
+    gameController.drawGameMode(canvasContext)
 
     // draw satellites
     compSatellites.forEach(function(sat){
