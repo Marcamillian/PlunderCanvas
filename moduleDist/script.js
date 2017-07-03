@@ -1452,7 +1452,7 @@ module.exports = MenuModule
 gObjs = require('./../gameObjects/objectBundle.js');
 
 const TutorialModule = function TutorialModule(screenSize){
-    const modes = ['discover', 'interfere']
+    const modes = ['discover', 'interfere', 'overlap']
     var state = {
         tutorialLayout: undefined,
         player: undefined,
@@ -1461,60 +1461,53 @@ const TutorialModule = function TutorialModule(screenSize){
         probe: undefined,
         mode: undefined
     }
-    var init = function init(screenSize, setupName){
-        switch(setupName){
+    var init = function init(screenSize, treasureDist){
+        
+        // == LAY OUT ALL THE ELEMENTS
+        {
+            // create the layout helper
+            state.tutorialLayout = gObjs.TutorialLayout(screenSize)
+
+            // create the players ship
+            state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
+            
+            // set up the satellites
+            var satPositions = state.tutorialLayout.layoutSatellites()
+            satPositions.forEach((satPos)=>{
+                var sat = gObjs.Satellite({ position: satPos,
+                                            size: {width: 20, height: 20}
+                })
+                state.satellites.push(sat)
+            })
+            state.satellites[0].addLoot(1,10)// put loot on sat 1
+
+            // set up the probe
+            state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
+
+            // set up the fire button
+            state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
+        }
+        // == Add the treasure based on scenario
+        switch(treasureDist){
             case 'discover':
                 state.mode = 'discover'
-                // create the layout helper
-                state.tutorialLayout = gObjs.TutorialLayout(screenSize)
-
-                // create the players ship
-                state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
-                
-                // set up the satellites
-                var satPositions = state.tutorialLayout.layoutSatellites()
-                satPositions.forEach((satPos)=>{
-                    var sat = gObjs.Satellite({ position: satPos,
-                                                size: {width: 20, height: 20}
-                    })
-                    state.satellites.push(sat)
-                })
                 state.satellites[0].addLoot(1,10)// put loot on sat 1
-
-                // set up the probe
-                state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
-
-                // set up the fire button
-                state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
             break;
             case 'interfere':
                 state.mode = 'interfere'
-                // create the layout helper
-                state.tutorialLayout = gObjs.TutorialLayout(screenSize)
-
-                // create the players ship
-                state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
-                
-                // set up the satellites
-                var satPositions = state.tutorialLayout.layoutSatellites()
-                satPositions.forEach((satPos)=>{
-                    var sat = gObjs.Satellite({ position: satPos,
-                                                size: {width: 20, height: 20}
-                    })
-                    state.satellites.push(sat)
-                })
                 state.satellites[0].addLoot(1,10)// put loot on sat 1
                 state.satellites[3].addLoot(0,10)// put loot on sat 1
-
-                // set up the probe
-                state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
-
-                // set up the fire button
-                state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
+                state.satellites[2].addLoot(0,10)// put loot on sat 1
             break;
+            case 'overlap':
+                state.mode = 'overlap'
+                state.satellites[0].addLoot(0,10)// put loot on sat 1
+                state.satellites[0].addLoot(1,10)// put loot on sat 1
+                state.satellites[1].addLoot(0,10)// put loot on sat 1
+            break
         }
     }
-    init(screenSize, 'interfere')
+    init(screenSize, 'discover')
 
     var render = function render(ctx){
 
@@ -1603,7 +1596,6 @@ const TutorialModule = function TutorialModule(screenSize){
         var screenSize = {width:state.tutorialLayout.screenSize('width'),
                             height: state.tutorialLayout.screenSize('height')}
 
-        console.log("tutorial mode: ", modeIndex)
         modeName = (modeIndex < modes.length)? modes[modeIndex] : modes[0]
         
         reset()
