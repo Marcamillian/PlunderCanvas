@@ -38,6 +38,10 @@ const TutorialLayout = function LayoutTutorial(screenSize){
         return {x:25*state.U.x, y: 90*state.U.y }
     }
 
+    var layoutGuessButton = function layoutGuessButton(){
+        return {x: 50*state.U.x, y: 10*state.U.y}
+    }
+
     var screenSize = function screenSize(dim){
         return (dim == 'width') ? state.screenSize.width : (dim =="height") ? state.screenSize.height: undefined
     }
@@ -65,8 +69,9 @@ const TutorialLayout = function LayoutTutorial(screenSize){
             screenSize: screenSize,
             layoutSatellites: layoutSatellites,
             layoutFireButton: layoutFireButton,
+            layoutGuessButton: layoutGuessButton,
             inBounds: inBounds,
-            getActiveSatellites: getActiveSatellites
+            getActiveSatellites: getActiveSatellites,
         }
     )
 }

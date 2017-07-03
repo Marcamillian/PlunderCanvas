@@ -769,6 +769,10 @@ const TutorialLayout = function LayoutTutorial(screenSize){
         return {x:25*state.U.x, y: 90*state.U.y }
     }
 
+    var layoutGuessButton = function layoutGuessButton(){
+        return {x: 50*state.U.x, y: 10*state.U.y}
+    }
+
     var screenSize = function screenSize(dim){
         return (dim == 'width') ? state.screenSize.width : (dim =="height") ? state.screenSize.height: undefined
     }
@@ -796,8 +800,9 @@ const TutorialLayout = function LayoutTutorial(screenSize){
             screenSize: screenSize,
             layoutSatellites: layoutSatellites,
             layoutFireButton: layoutFireButton,
+            layoutGuessButton: layoutGuessButton,
             inBounds: inBounds,
-            getActiveSatellites: getActiveSatellites
+            getActiveSatellites: getActiveSatellites,
         }
     )
 }
@@ -1462,6 +1467,7 @@ const TutorialModule = function TutorialModule(screenSize){
         fireButon: undefined,
         probe: undefined,
         mode: undefined,
+        guessButton: undefined,
         guess: false
     }
     var init = function init(screenSize, treasureDist){
@@ -1489,6 +1495,12 @@ const TutorialModule = function TutorialModule(screenSize){
 
             // set up the fire button
             state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
+
+            // add in the button to confirm the guess
+            state.guessButton = gObjs.Button({ pos: state.tutorialLayout.layoutGuessButton(),
+                                                size: {width: 50, height: 50},
+                                                clickFunction: ()=>{toggleGuessMode()}}
+            )
         }
 
         // == Add the treasure based on scenario
@@ -1525,6 +1537,7 @@ const TutorialModule = function TutorialModule(screenSize){
         state.satellites.forEach((sat)=>{sat.draw(ctx)})
         state.fireButton.draw(ctx)
         state.probe.draw(ctx)
+        state.guessButton.draw(ctx)
     }
 
     var update = function update(timeStep, keysDown){
@@ -1537,6 +1550,11 @@ const TutorialModule = function TutorialModule(screenSize){
             // see if we fired the probe
             if(!state.probe.isActive() && state.fireButton.runClick( clickPos , {launchAngle:state.player.getAngle()})){
                 delete keysDown["click"];
+                return
+            }
+
+            if(state.guessButton.runClick(clickPos)){
+                delete keysDown['click']
                 return
             }
 
@@ -1592,6 +1610,7 @@ const TutorialModule = function TutorialModule(screenSize){
             fireButon: undefined,
             probe: undefined,
             mode: undefined,
+            guessButton: undefined,
             guess: false
         }
     }
@@ -1605,6 +1624,11 @@ const TutorialModule = function TutorialModule(screenSize){
         
         reset()
         init(screenSize, modeName)
+    }
+
+    var toggleGuessMode = function toggleGuessMode(){
+        state.guess = !state.guess
+        console.log("Guess mode: ", state.guess)
     }
 
     return Object.assign(
