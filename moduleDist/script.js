@@ -813,6 +813,7 @@ var Probe = require('./Probe.js')
 var Satellite = require('./Satellite.js')
 var Ship = require('./Ship.js')
 var TutorialLayout = require('./TutorialLayout.js')
+var Button = require('./Button.js')
 
 module.exports = {
     ClickMarker: ClickMarker,
@@ -822,9 +823,10 @@ module.exports = {
     Probe: Probe,
     Satellite: Satellite,
     Ship: Ship,
-    TutorialLayout: TutorialLayout
+    TutorialLayout: TutorialLayout,
+    Button: Button
 }
-},{"./ClickMarker.js":4,"./FireButton.js":5,"./GameArea.js":6,"./InfoPopUp.js":7,"./Probe.js":8,"./Satellite.js":9,"./Ship.js":10,"./TutorialLayout.js":11}],13:[function(require,module,exports){
+},{"./Button.js":3,"./ClickMarker.js":4,"./FireButton.js":5,"./GameArea.js":6,"./InfoPopUp.js":7,"./Probe.js":8,"./Satellite.js":9,"./Ship.js":10,"./TutorialLayout.js":11}],13:[function(require,module,exports){
 var appManager = require('./AppManager.js');
 
 init = function init(){
@@ -1459,12 +1461,13 @@ const TutorialModule = function TutorialModule(screenSize){
         satellites: [],
         fireButon: undefined,
         probe: undefined,
-        mode: undefined
+        mode: undefined,
+        guess: false
     }
     var init = function init(screenSize, treasureDist){
         
-        // == LAY OUT ALL THE ELEMENTS
-        {
+        
+        { // == LAY OUT ALL THE ELEMENTS
             // create the layout helper
             state.tutorialLayout = gObjs.TutorialLayout(screenSize)
 
@@ -1487,6 +1490,7 @@ const TutorialModule = function TutorialModule(screenSize){
             // set up the fire button
             state.fireButton = gObjs.FireButton(state.tutorialLayout.layoutFireButton(), state.probe)
         }
+
         // == Add the treasure based on scenario
         switch(treasureDist){
             case 'discover':
@@ -1507,7 +1511,7 @@ const TutorialModule = function TutorialModule(screenSize){
             break
         }
     }
-    init(screenSize, 'discover')
+    init(screenSize, modes[modes.length-1])
 
     var render = function render(ctx){
 
@@ -1531,7 +1535,7 @@ const TutorialModule = function TutorialModule(screenSize){
             }
 
             // see if we fired the probe
-            if(state.fireButton.runClick( clickPos , {launchAngle:state.player.getAngle()})){
+            if(!state.probe.isActive() && state.fireButton.runClick( clickPos , {launchAngle:state.player.getAngle()})){
                 delete keysDown["click"];
                 return
             }
@@ -1587,7 +1591,8 @@ const TutorialModule = function TutorialModule(screenSize){
             satellites: [],
             fireButon: undefined,
             probe: undefined,
-            mode: undefined
+            mode: undefined,
+            guess: false
         }
     }
 
