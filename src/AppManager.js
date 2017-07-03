@@ -125,6 +125,7 @@ var changeModules = function changeModules(activateModule){
         case undefined: 
             return activeModule = (activeModule == menuModule) ? gameModule : menuModule
         case 'tutorial':
+            tutorialModule.toggleMode()
             return activeModule = tutorialModule
         case 'menu':
             return activeModule = menuModule
