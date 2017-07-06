@@ -266,7 +266,7 @@ module.exports = {
 behaviours = require('./../behaviours.js');
 
 const Button = function Button(arguments){
-    
+    const colors = ['#0000ff', '#ff69b4']
     state = {
          visible: true,
          colour: '#0000ff',
@@ -275,8 +275,13 @@ const Button = function Button(arguments){
          size: {width: arguments.size.width, height: arguments.size.height}
     }
 
+    var toggleActive = function toggleActive(){
+        var colIndex = colors.indexOf(state.colour) +1
+        state.colour = (colIndex < colors.length) ? colors[colIndex] : colors[0]
+    }
+
     return Object.assign(
-        {},
+        {toggleActive: toggleActive},
         behaviours.renderable(state),
         behaviours.reactToClick(state, arguments.clickFunction)
     )
@@ -770,7 +775,11 @@ const TutorialLayout = function LayoutTutorial(screenSize){
     }
 
     var layoutGuessButton = function layoutGuessButton(){
-        return {x: 50*state.U.x, y: 10*state.U.y}
+        return {x: 80*state.U.x, y: 90*state.U.y}
+    }
+
+    var layoutMessageWindow = function layoutMessageWindow(){
+        return {x: 50*state.U.x, y: 20*state.U.y}
     }
 
     var screenSize = function screenSize(dim){
@@ -801,6 +810,7 @@ const TutorialLayout = function LayoutTutorial(screenSize){
             layoutSatellites: layoutSatellites,
             layoutFireButton: layoutFireButton,
             layoutGuessButton: layoutGuessButton,
+            layoutMessageWindow: layoutMessageWindow,
             inBounds: inBounds,
             getActiveSatellites: getActiveSatellites,
         }
@@ -1461,6 +1471,7 @@ gObjs = require('./../gameObjects/objectBundle.js');
 const TutorialModule = function TutorialModule(screenSize){
     const modes = ['discover', 'interfere', 'overlap']
     var state = {
+        messageWindow: undefined,
         tutorialLayout: undefined,
         player: undefined,
         satellites: [],
@@ -1474,8 +1485,13 @@ const TutorialModule = function TutorialModule(screenSize){
         
         
         { // == LAY OUT ALL THE ELEMENTS
+
             // create the layout helper
             state.tutorialLayout = gObjs.TutorialLayout(screenSize)
+
+            state.messageWindow = gObjs.InfoPopUp({ position: state.tutorialLayout.layoutMessageWindow(),
+                                                    size: { height: 50, width: 350}
+            })
 
             // create the players ship
             state.player = gObjs.Ship({position: state.tutorialLayout.layoutPlayer()});
@@ -1488,7 +1504,6 @@ const TutorialModule = function TutorialModule(screenSize){
                 })
                 state.satellites.push(sat)
             })
-            state.satellites[0].addLoot(1,10)// put loot on sat 1
 
             // set up the probe
             state.probe = gObjs.Probe(state.tutorialLayout.layoutPlayer())
@@ -1499,27 +1514,37 @@ const TutorialModule = function TutorialModule(screenSize){
             // add in the button to confirm the guess
             state.guessButton = gObjs.Button({ pos: state.tutorialLayout.layoutGuessButton(),
                                                 size: {width: 50, height: 50},
-                                                clickFunction: ()=>{toggleGuessMode()}}
+                                                clickFunction: ()=>{
+                                                    toggleGuessMode()
+                                                    state.guessButton.toggleActive();
+                                                }}
             )
+
         }
 
         // == Add the treasure based on scenario
         switch(treasureDist){
             case 'discover':
                 state.mode = 'discover'
-                state.satellites[0].addLoot(1,10)// put loot on sat 1
+                var hideSatIndex = Math.floor(Math.random()*state.satellites.length)
+                state.satellites[hideSatIndex].addLoot(1,10)// put loot on sat 1
             break;
-            case 'interfere':
+            case 'interfere':   // your treasure will deflect the probe too
                 state.mode = 'interfere'
-                state.satellites[0].addLoot(1,10)// put loot on sat 1
+                var hideSatIndex = Math.floor(Math.random()*2)
+                state.satellites[hideSatIndex].addLoot(1,10)// put loot on one of the back satellites
                 state.satellites[3].addLoot(0,10)// put loot on sat 1
                 state.satellites[2].addLoot(0,10)// put loot on sat 1
             break;
             case 'overlap':
                 state.mode = 'overlap'
-                state.satellites[0].addLoot(0,10)// put loot on sat 1
-                state.satellites[0].addLoot(1,10)// put loot on sat 1
-                state.satellites[1].addLoot(0,10)// put loot on sat 1
+                var hideSatIndex = Math.floor(Math.random()*state.satellites.length)
+                var decoySatIndex = Math.floor(Math.random()*state.satellites.length)
+                while(hideSatIndex == decoySatIndex){ decoySatIndex = Math.floor(Math.random()*state.satellites.length) } // make sure that they are not the same
+
+                state.satellites[hideSatIndex].addLoot(0,10)// put loot on sat 1
+                state.satellites[hideSatIndex].addLoot(1,10)// put loot on sat 1
+                state.satellites[decoySatIndex].addLoot(0,10)// put loot on sat 1
             break
         }
     }
@@ -1538,9 +1563,46 @@ const TutorialModule = function TutorialModule(screenSize){
         state.fireButton.draw(ctx)
         state.probe.draw(ctx)
         state.guessButton.draw(ctx)
+        state.messageWindow.draw(ctx)
     }
 
     var update = function update(timeStep, keysDown){
+
+        // clear the message box if its open
+        if(keysDown['click'] && state.messageWindow.getVisible()){
+            state.messageWindow.toggleShow();
+            delete keysDown['click']
+            return
+        }
+
+        // see if we are in guess mode
+        if(state.guess == true){
+            
+
+            if(keysDown['click']){ // if there is a click
+
+                var clickPos = {x:keysDown['click'].offsetX,
+                                y: keysDown['click'].offsetY}
+
+                // switch out of guess mode if you want
+                if(state.guessButton.runClick(clickPos)){
+                    delete keysDown['click']
+                    return
+                }
+
+                // check if the satellite is clicked
+                state.satellites.forEach((sat, index)=>{
+                    if(sat.runClick(clickPos, 2)){
+                        checkSatellite(index)
+                        delete keysDown["click"]
+                    }
+                })
+            }
+            
+
+            return
+        }
+
         // deal with the clicks
         if(keysDown['click']){
             var clickPos = {    x: keysDown['click'].offsetX,
@@ -1604,6 +1666,7 @@ const TutorialModule = function TutorialModule(screenSize){
 
     var reset = function reset(){
         state = {
+            messageWindow: undefined,
             tutorialLayout: undefined,
             player: undefined,
             satellites: [],
@@ -1611,7 +1674,7 @@ const TutorialModule = function TutorialModule(screenSize){
             probe: undefined,
             mode: undefined,
             guessButton: undefined,
-            guess: false
+            guess: false,
         }
     }
 
@@ -1628,8 +1691,16 @@ const TutorialModule = function TutorialModule(screenSize){
 
     var toggleGuessMode = function toggleGuessMode(){
         state.guess = !state.guess
-        console.log("Guess mode: ", state.guess)
     }
+
+    var checkSatellite = function checkSatellite(satIndex){
+        if(state.satellites[satIndex].getPlayerLoot(1) != 0){
+            state.messageWindow.setMessage(" CORRECT !")
+        }else{
+            state.messageWindow.setMessage(" Not That one !")
+        }
+        state.messageWindow.toggleShow()
+    }   
 
     return Object.assign(
         {

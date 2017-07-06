@@ -39,7 +39,11 @@ const TutorialLayout = function LayoutTutorial(screenSize){
     }
 
     var layoutGuessButton = function layoutGuessButton(){
-        return {x: 50*state.U.x, y: 10*state.U.y}
+        return {x: 80*state.U.x, y: 90*state.U.y}
+    }
+
+    var layoutMessageWindow = function layoutMessageWindow(){
+        return {x: 50*state.U.x, y: 20*state.U.y}
     }
 
     var screenSize = function screenSize(dim){
@@ -70,6 +74,7 @@ const TutorialLayout = function LayoutTutorial(screenSize){
             layoutSatellites: layoutSatellites,
             layoutFireButton: layoutFireButton,
             layoutGuessButton: layoutGuessButton,
+            layoutMessageWindow: layoutMessageWindow,
             inBounds: inBounds,
             getActiveSatellites: getActiveSatellites,
         }
