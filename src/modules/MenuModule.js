@@ -10,8 +10,6 @@ const MenuModule = function MenuModule(dimUnits, callbackFunctions){
     }
 
     const init = function init(dimUnits){
-    
-        console.log(callbackFunctions)
 
         var button_modeToggle = Button({
             pos: {x:dimUnits.width*50, y:dimUnits.height*50},

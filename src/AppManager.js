@@ -21,7 +21,7 @@ var keysDown = {};  // track the keys pressed
 var then;   // track the last frame time
 
 // module instance
-var gameModule = GameModule(viewPortDimUnits)
+var gameModule = GameModule(viewPortDimUnits, true)
 var menuModule = MenuModule(viewPortDimUnits, {
         modeToggle: gameModule.toggleGameMode,
         startGame: this.changeModules // The function doesn't exist yet to pass
@@ -125,6 +125,7 @@ var changeModules = function changeModules(activateModule){
         case undefined: 
             return activeModule = (activeModule == menuModule) ? gameModule : menuModule
         case 'tutorial':
+            tutorialModule.toggleMode()
             return activeModule = tutorialModule
         case 'menu':
             return activeModule = menuModule
