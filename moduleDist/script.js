@@ -22,7 +22,7 @@ var keysDown = {};  // track the keys pressed
 var then;   // track the last frame time
 
 // module instance
-var gameModule = GameModule(viewPortDimUnits)
+var gameModule = GameModule(viewPortDimUnits, true)
 var menuModule = MenuModule(viewPortDimUnits, {
         modeToggle: gameModule.toggleGameMode,
         startGame: this.changeModules // The function doesn't exist yet to pass
@@ -139,7 +139,7 @@ module.exports = {
     init: init,
     mainLoop: mainLoop
 }
-},{"./modules/GameModule.js":14,"./modules/MenuModule.js":15,"./modules/TutorialModule.js":16}],2:[function(require,module,exports){
+},{"./modules/GameModule.js":15,"./modules/MenuModule.js":16,"./modules/TutorialModule.js":17}],2:[function(require,module,exports){
 const stateReporter = function stateReporter(state){
   return{
     getState: function getState(){
@@ -263,6 +263,129 @@ module.exports = {
     dimLayout: dimLayout
 }
 },{}],3:[function(require,module,exports){
+behaviours = require('./../behaviours.js')
+
+const AIOpposition = function AIOpposition(){
+    const adjDirections = ["above", "below", "left", "right"]
+    
+    var state = {
+        satelliteSuspicion :[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        probeFired: false,
+        clickPoint: {x:150, y:236},
+        satellitesPlaced: 10,
+        lastProbePos: {x:0, y:0},
+        lastProbeVector: {x:0, y:0},
+        changeVector: {x:0, y:0}
+    }
+    // API INTERFACES
+    var update = function update(arguments){
+        var myLoot = gameController.getLootArray(gameController.getActivePlayer()); // get what your loot looks like
+
+        switch(arguments.roundPhase){
+            case 0: // place satellites randomly
+                    // TODO : Feeling cocky or not
+                    // TODO : weight probability towards/away from certain satellites
+                // place loot in a safe space? - where there isn't too much loot
+                var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+                while (myLoot[randomSat] > 10){randomSat = Math.floor(Math.random()*15.99)} // loop back round if there are too many on the satellite
+
+                state.clickPoint = satellites[randomSat].getPosition() // set the position
+            break
+            case 1: // place & fire phase update
+
+                if(!arguments.probeFired){ // if not fired yet
+                    // randomly guess at a position - between two adjacent satellites
+                    var randomSat = Math.floor(Math.random()*15.99)// select a satellite to place something on at random
+                    var adjDirection = adjDirections[Math.floor(Math.random()*4)]
+                    var adjacentSat = gameArea.adjacentSat(randomSat, adjDirection)
+                    state.clickPoint = satellites[randomSat].getPosition()
+
+                    // set up the current probe position as the first difference // TODO: Could we get the starting vector??
+                    //state.lastProbePos = arguments.probePos;
+
+                    console.log("pointing")
+                }else{ // if fired
+                    // the slope difference that is found - +ve if left -- -ve if right
+
+                    var probe_XChange = arguments.probePos.x - state.lastProbePos.x ;
+                    var probe_YChange = arguments.probePos.y - state.lastProbePos.y;
+
+                    var thisProbePos = arguments.probePos;
+                    var observedUnitVector = VectorTools.toUnitVector(probe_XChange, probe_YChange);
+
+                    // find the difference in the vectors
+                    var changeVector = VectorTools.toUnitVector( observedUnitVector.x - state.lastProbeVector.x,
+                                                                    observedUnitVector.y - state.lastProbeVector.y)
+
+                    // store the data for the next update
+                    state.lastProbePos.x = arguments.probePos.x;
+                    state.lastProbePos.y = arguments.probePos.y;
+                    state.lastProbeVector = observedUnitVector;
+                    state.changeVector = changeVector;
+                    
+                }
+
+                // what probes I want to find out more about (ones that I am most suspicious of?)
+                    // how much the probe position changed from last time
+                    // if probe didnt change acceloration much - make other places suspicious
+            break
+            case 2:
+                // pick somewhere to steal the one that I am most suspicious of
+                    // compare 
+
+                state.lastProbePos = {x:0, y:0}
+                state.lastProbeVector = {x:0, y:0}
+            break
+        }
+    }
+    var placeSatellite = function placeSatellite(currentPlunderArray){ // return the index of the satellite that I want
+        // if confident
+            // place loot concentrated in one place - no more than 10?
+            // loop through array to se where stuff already is 
+            // if even choose random (weighted towards the edge?)
+        //if not
+            // spread them around in ones or twos
+
+            // For now
+    }
+    var getClickPos = function getClickPos(gamePhase){
+        return state.clickPoint;
+    }
+    var isConfident = function isConfident(scores){
+
+    }
+    var drawSuspicion = function DrawSuspicion(ctx, probePosition){
+        
+        ctx.save();
+        ctx.strokeStyle = 'deeppink';
+
+        ctx.beginPath();
+        ctx.moveTo(probePosition.x, probePosition.y);
+        ctx.lineTo( probePosition.x + state.lastProbeVector.x * 50,
+                        probePosition.y + state.lastProbeVector.y * 50);
+        ctx.stroke();
+
+        ctx.beginPath()
+        ctx.moveTo(probePosition.x, probePosition.y)
+        ctx.strokeStyle = "yellow";
+        ctx.lineTo( probePosition.x + state.changeVector.x * 50,
+                        probePosition.y + state.changeVector.y * 50)
+        ctx.stroke();
+        
+
+        ctx.restore()
+    }
+    return Object.assign(
+        {getClickPos: getClickPos,
+        update:update,
+        drawSuspicion: drawSuspicion
+        },
+        behaviours.stateReporter(state)
+    )
+}
+
+module.exports = AIOpposition
+},{"./../behaviours.js":2}],4:[function(require,module,exports){
 behaviours = require('./../behaviours.js');
 
 const Button = function Button(arguments){
@@ -288,7 +411,7 @@ const Button = function Button(arguments){
 }
 
 module.exports = Button
-},{"./../behaviours.js":2}],4:[function(require,module,exports){
+},{"./../behaviours.js":2}],5:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 // OBJECT FOR WHERE YOU CLICK 
@@ -307,7 +430,7 @@ const ClickMarker = function ClickMarker(){
 }
 
 module.exports = ClickMarker;
-},{"./../behaviours.js":2}],5:[function(require,module,exports){
+},{"./../behaviours.js":2}],6:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 const FireButton = function FireButton(position, targetObject, triggerArgs){
@@ -344,7 +467,7 @@ const FireButton = function FireButton(position, targetObject, triggerArgs){
 }
 
 module.exports = FireButton;
-},{"./../behaviours.js":2}],6:[function(require,module,exports){
+},{"./../behaviours.js":2}],7:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 const GameArea = function GameArea(Ux, Uy){
@@ -492,7 +615,7 @@ const GameArea = function GameArea(Ux, Uy){
 }
 
 module.exports = GameArea
-},{"./../behaviours.js":2}],7:[function(require,module,exports){
+},{"./../behaviours.js":2}],8:[function(require,module,exports){
 var behaviours = require('./../behaviours.js')
 
 const InfoPopUp = function InfoPopUp(arguments){
@@ -532,7 +655,7 @@ const InfoPopUp = function InfoPopUp(arguments){
 }
 
 module.exports = InfoPopUp
-},{"./../behaviours.js":2}],8:[function(require,module,exports){
+},{"./../behaviours.js":2}],9:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 const Probe = function Probe(position){
@@ -611,7 +734,7 @@ const Probe = function Probe(position){
 }
 
 module.exports = Probe
-},{"./../behaviours.js":2}],9:[function(require,module,exports){
+},{"./../behaviours.js":2}],10:[function(require,module,exports){
 var behaviours = require('../behaviours.js')
 
 const Satellite = function Satellite(arguments){ 
@@ -701,7 +824,7 @@ const Satellite = function Satellite(arguments){
 
 
 module.exports = Satellite
-},{"../behaviours.js":2}],10:[function(require,module,exports){
+},{"../behaviours.js":2}],11:[function(require,module,exports){
 var behaviours = require('./../behaviours.js');
 
 const Ship = function Ship(arguments){
@@ -733,7 +856,7 @@ const Ship = function Ship(arguments){
 }
 
 module.exports = Ship;
-},{"./../behaviours.js":2}],11:[function(require,module,exports){
+},{"./../behaviours.js":2}],12:[function(require,module,exports){
 const TutorialLayout = function LayoutTutorial(screenSize){
 
     var state = {
@@ -818,7 +941,7 @@ const TutorialLayout = function LayoutTutorial(screenSize){
 }
 
 module.exports = TutorialLayout
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // bundle together all of the objects (working on individual files is easier)
 var ClickMarker = require('./ClickMarker.js')
 var FireButton = require('./FireButton.js');
@@ -829,6 +952,7 @@ var Satellite = require('./Satellite.js')
 var Ship = require('./Ship.js')
 var TutorialLayout = require('./TutorialLayout.js')
 var Button = require('./Button.js')
+var AIPlayer = require('./AIPlayer.js')
 
 module.exports = {
     ClickMarker: ClickMarker,
@@ -839,9 +963,10 @@ module.exports = {
     Satellite: Satellite,
     Ship: Ship,
     TutorialLayout: TutorialLayout,
-    Button: Button
+    Button: Button,
+    AIPlayer: AIPlayer
 }
-},{"./Button.js":3,"./ClickMarker.js":4,"./FireButton.js":5,"./GameArea.js":6,"./InfoPopUp.js":7,"./Probe.js":8,"./Satellite.js":9,"./Ship.js":10,"./TutorialLayout.js":11}],13:[function(require,module,exports){
+},{"./AIPlayer.js":3,"./Button.js":4,"./ClickMarker.js":5,"./FireButton.js":6,"./GameArea.js":7,"./InfoPopUp.js":8,"./Probe.js":9,"./Satellite.js":10,"./Ship.js":11,"./TutorialLayout.js":12}],14:[function(require,module,exports){
 var appManager = require('./AppManager.js');
 
 init = function init(){
@@ -856,10 +981,10 @@ init = function init(){
 
 
 
-},{"./AppManager.js":1}],14:[function(require,module,exports){
+},{"./AppManager.js":1}],15:[function(require,module,exports){
 gObjs = require('./../gameObjects/objectBundle.js');
 
-const GameModule = function GameModule(dimUnits){
+const GameModule = function GameModule(dimUnits, aiPlayer){
     const endGameLimits = {
         pointLead:{
             gap: 10
@@ -888,6 +1013,7 @@ const GameModule = function GameModule(dimUnits){
         messageBox: undefined,
         fireButton: undefined,
         gameArea: undefined,
+        aiPlayer: undefined,
         // round end flags
         satellitesToAdd: 10,
         phaseComplete: false,
@@ -902,14 +1028,18 @@ const GameModule = function GameModule(dimUnits){
     // == Generic Function Calls
 
     // ! CALL INIT IMMEDIATELY
-    var init = function init(dimUnits){
-
+    var init = function init(dimUnits, aiPlayer){
+        console.log(aiPlayer)
         // create the game area
         state.gameArea = gObjs.GameArea(dimUnits.width, dimUnits.height);
 
         // create the players
         state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p1')}))
         state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p2')}))
+
+        if(aiPlayer){
+            state.aiPlayer = gObjs.AIPlayer()
+        }
 
         // get the positionss on the satellites
         var satPositions = state.gameArea.gridPositions();
@@ -929,7 +1059,7 @@ const GameModule = function GameModule(dimUnits){
         // create the message PopUp
         state.messageBox = gObjs.InfoPopUp(state.gameArea.layoutMessage())
 
-    }(dimUnits)
+    }(dimUnits, aiPlayer)
 
     var render = function render(ctx){
 
@@ -1377,7 +1507,7 @@ const GameModule = function GameModule(dimUnits){
 }
 
 module.exports = GameModule
-},{"./../gameObjects/objectBundle.js":12}],15:[function(require,module,exports){
+},{"./../gameObjects/objectBundle.js":13}],16:[function(require,module,exports){
 Button = require('./../gameObjects/Button.js')
 FireButton = require('./../gameObjects/FireButton.js')
 Ship = require('./../gameObjects/Ship.js')
@@ -1390,8 +1520,6 @@ const MenuModule = function MenuModule(dimUnits, callbackFunctions){
     }
 
     const init = function init(dimUnits){
-    
-        console.log(callbackFunctions)
 
         var button_modeToggle = Button({
             pos: {x:dimUnits.width*50, y:dimUnits.height*50},
@@ -1465,7 +1593,7 @@ const MenuModule = function MenuModule(dimUnits, callbackFunctions){
 }
 
 module.exports = MenuModule
-},{"./../gameObjects/Button.js":3,"./../gameObjects/FireButton.js":5,"./../gameObjects/Ship.js":10}],16:[function(require,module,exports){
+},{"./../gameObjects/Button.js":4,"./../gameObjects/FireButton.js":6,"./../gameObjects/Ship.js":11}],17:[function(require,module,exports){
 gObjs = require('./../gameObjects/objectBundle.js');
 
 const TutorialModule = function TutorialModule(screenSize){
@@ -1712,4 +1840,4 @@ const TutorialModule = function TutorialModule(screenSize){
 }
 
 module.exports = TutorialModule
-},{"./../gameObjects/objectBundle.js":12}]},{},[13]);
+},{"./../gameObjects/objectBundle.js":13}]},{},[14]);

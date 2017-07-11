@@ -1,6 +1,6 @@
 gObjs = require('./../gameObjects/objectBundle.js');
 
-const GameModule = function GameModule(dimUnits){
+const GameModule = function GameModule(dimUnits, aiPlayer){
     const endGameLimits = {
         pointLead:{
             gap: 10
@@ -29,6 +29,7 @@ const GameModule = function GameModule(dimUnits){
         messageBox: undefined,
         fireButton: undefined,
         gameArea: undefined,
+        aiPlayer: undefined,
         // round end flags
         satellitesToAdd: 10,
         phaseComplete: false,
@@ -43,14 +44,18 @@ const GameModule = function GameModule(dimUnits){
     // == Generic Function Calls
 
     // ! CALL INIT IMMEDIATELY
-    var init = function init(dimUnits){
-
+    var init = function init(dimUnits, aiPlayer){
+        console.log(aiPlayer)
         // create the game area
         state.gameArea = gObjs.GameArea(dimUnits.width, dimUnits.height);
 
         // create the players
         state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p1')}))
         state.players.push( gObjs.Ship({position: state.gameArea.layoutPlayer('p2')}))
+
+        if(aiPlayer){
+            state.aiPlayer = gObjs.AIPlayer()
+        }
 
         // get the positionss on the satellites
         var satPositions = state.gameArea.gridPositions();
@@ -70,7 +75,7 @@ const GameModule = function GameModule(dimUnits){
         // create the message PopUp
         state.messageBox = gObjs.InfoPopUp(state.gameArea.layoutMessage())
 
-    }(dimUnits)
+    }(dimUnits, aiPlayer)
 
     var render = function render(ctx){
 

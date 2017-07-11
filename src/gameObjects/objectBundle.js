@@ -8,6 +8,7 @@ var Satellite = require('./Satellite.js')
 var Ship = require('./Ship.js')
 var TutorialLayout = require('./TutorialLayout.js')
 var Button = require('./Button.js')
+var AIPlayer = require('./AIPlayer.js')
 
 module.exports = {
     ClickMarker: ClickMarker,
@@ -18,5 +19,6 @@ module.exports = {
     Satellite: Satellite,
     Ship: Ship,
     TutorialLayout: TutorialLayout,
-    Button: Button
+    Button: Button,
+    AIPlayer: AIPlayer
 }
