@@ -19,5 +19,8 @@
   "homepage": "https://github.com/Marcamillian/PlunderCanvas#readme",
   "devDependencies": {
     "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "browserify": "^16.2.2"
   }
 }
