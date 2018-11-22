@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "tap UnitTests/*.js",
+    "debug_test": "node unitTests/*.js",
     "build": "browserify ./src/mainScript.js > dist/script.js"
   },
   "repository": {
@@ -19,5 +20,8 @@
   "homepage": "https://github.com/Marcamillian/PlunderCanvas#readme",
   "devDependencies": {
     "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "tap": "^12.1.0"
   }
 }
