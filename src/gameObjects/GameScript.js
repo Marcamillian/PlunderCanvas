@@ -31,20 +31,20 @@ const GameScript = function GameScript(scriptData){
     }
 
     let nextChapter = function nextChapter(){
-        if(scriptChapter < getChapters().length){
+        if(state.scriptChapter < getChapters().length -1){
             state.scriptChapter ++;
             state.chapterPage = 0;
-            return getChapters()[scriptChapter] // return chapter name
+            return getChapters()[state.scriptChapter] // return chapter name
         }else{
             throw new Error("End of chapters")
         }
     }
 
     let prevChapter = function prevChapter(){
-        if(scriptChapter >= 0){
-            scriptChapter --;   // lower the chapter
+        if(state.scriptChapter > 0){
+            state.scriptChapter --;   // lower the chapter
             state.chapterPage = 0   // go to first page of chapter
-            return getChapters()[scriptChapter]
+            return getChapters()[state.scriptChapter]
         }else{
             throw new Error("Start of chapters")
         }

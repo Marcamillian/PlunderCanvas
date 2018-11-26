@@ -55,23 +55,15 @@ test("Testing chapter present in GameScript", (t)=>{
     t.end()
 })
 
-test.skip("Testing chapter changing", (t)=>{
-    t.test("Chapter switching", (ts)=>{
-        let testScript = GameScript(scriptData);
-        let chapterNames = Object.keys(scriptData);
+test("Testing chapter changing", (t)=>{
 
-        t.equals(testScript.nextChapter(), scriptData[chapterNames[1]], "Next chapter provided on chapter change")
-        t.throws(()=>{testScript.nextChapter()}, /End of chapters/i, "Can't go further than last chapter") 
-        t.equals(testScript.prevChapter(), scriptData[chapterNames[0]], "Previous chapter is correct")
-        t.throws(()=>{testScript.prevChapter()}, /Start of chapters/i, "Can't go before first chapter")
-        
-        t.end()
-    })
+    let testScript = GameScript(scriptData);
+    let chapterNames = Object.keys(scriptData);
 
-    t.test("Page switching", (ts)=>{
-
-    })
+    t.equals(testScript.nextChapter(), chapterNames[1], "Next chapter provided on chapter change")
+    t.throws(()=>{testScript.nextChapter()}, /End of chapters/i, "Can't go further than last chapter") 
+    t.equals(testScript.prevChapter(), chapterNames[0], "Previous chapter is correct")
+    t.throws(()=>{testScript.prevChapter()}, /Start of chapters/i, "Can't go before first chapter")
     
-
     t.end()
 })
