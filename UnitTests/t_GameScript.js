@@ -67,3 +67,45 @@ test("Testing chapter changing", (t)=>{
     
     t.end()
 })
+
+test("Testing page changing",(t)=>{
+
+
+    let testScript = GameScript(scriptData);
+
+    // advance a page
+    
+
+    // back up a page
+
+    // back up a page ()
+
+    // -- advance to chapter end
+
+    // advance over chapter boundary
+
+    //
+
+    t.end()
+})
+
+test("Testing page get", (t)=>{
+    let testScript = GameScript(scriptData);
+
+    var chapterNames = Object.keys(scriptData)
+    var afterLastPage = testScript.getChapter().length;
+
+    // default get page
+    t.equals(testScript.getPage(), scriptData[chapterNames[0]][0], "Gets the first page of first chapter")
+
+    // try a page less than 1
+    t.throws(()=>{ testScript.getPage(-1) },/Chapter can't be less than 0/i, "getPage less than 0" );
+
+    // try get a different page
+    t.equals( testScript.getPage(2), scriptData[chapterNames[0]][2], "Gets a non default page in the chapter")
+
+    // try an out of upper range page
+    t.throws( ()=>{ testScript.getPage(afterLastPage) }, /chapterPage too high/i , "Error thrown if found a page out of range" )
+
+    t.end()
+})

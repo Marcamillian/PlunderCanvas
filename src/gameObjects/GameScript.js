@@ -10,6 +10,8 @@ const GameScript = function GameScript(scriptData){
         chapterPage:0
     }
 
+    // chapter functions
+
     let getChapter = function getChapter(chapterName = getChapterName()){
         if(hasChapter(chapterName)){
             return scriptData[chapterName]
@@ -50,6 +52,8 @@ const GameScript = function GameScript(scriptData){
         }
     }
 
+    // page functions
+
     let nextPage = function nextPage(){
         let thisChapter = getChapterName()
         // if there are pages left
@@ -58,6 +62,25 @@ const GameScript = function GameScript(scriptData){
         }else{  
             nextChapter()
         }
+
+        // return the page text
+        return getPage();
+    }
+
+    let prevPage = function prevPage(){
+        
+    }
+
+    let getPage = function getPage(chapterPage = state.chapterPage){
+        
+        let activeChapter = getChapter();
+
+        // check page numbers
+        if(chapterPage < 0) throw new Error("Chapter can't be less than 0")
+        if(chapterPage >= activeChapter.length) throw new Error(`chapterPage too high: ${chapterPage} of ${activeChapter.length}`)
+        
+
+        return getChapter()[chapterPage]
     }
 
     // TODO: Check for unmet interaction test
@@ -69,7 +92,9 @@ const GameScript = function GameScript(scriptData){
             getChapterName,
             nextChapter,
             prevChapter,
+            getPage,
             nextPage,
+            prevPage,
             hasChapter
         },
         behaviours.stateReporter(state)
