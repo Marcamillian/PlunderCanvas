@@ -3,14 +3,14 @@ GameScript = require('./../src/gameObjects/GameScript');
 
 const scriptData = {
     "chapter1":[
-        "Something here",
-        "Something else",
-        "Aditional thing"
+        {text:"Something here"},
+        {text:"Something else"},
+        {text:"Aditional thing"}
     ],
     "chapter2":[
-        "second something",
-        "another something here",
-        "additonal something 2"
+        {text:"second something"},
+        {text:"another something here"},
+        {text:"additonal something 2"}
     ]
 }
 
@@ -72,7 +72,7 @@ test("Testing page changing",(t)=>{
 
 
     let testScript = GameScript(scriptData);
-
+    // !!TODO : Test the page changing functionality
     // advance a page
     
 
