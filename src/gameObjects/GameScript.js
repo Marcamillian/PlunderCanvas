@@ -54,21 +54,37 @@ const GameScript = function GameScript(scriptData){
 
     // page functions
 
-    let nextPage = function nextPage(){
+    let nextPage = function nextPage(pagesToProgress = 1){
         let thisChapter = getChapterName()
         // if there are pages left
-        if(chapterPage+1 < scriptData[thisChapter].length){
-            chapterPage ++;
+        if(state.chapterPage + (pagesToProgress-1) <= scriptData[thisChapter].length){
+            state.chapterPage += pagesToProgress;
         }else{  
-            nextChapter()
+           nextChapter()
         }
 
         // return the page text
         return getPage();
     }
 
-    let prevPage = function prevPage(){
-        
+    let prevPage = function prevPage(pagesToBackUp = 1){
+        // if there are pages left
+        if(state.chapterPage - pagesToBackUp >= 0){
+            state.chapterPage -= pagesToBackUp;
+        }else{ 
+            try{
+                prevChapter()
+            } catch(e){
+                if (/Start of chapters/i.test(e.message)){
+                    throw new Error("First page of script")
+                }else{
+                    throw e
+                }
+            }
+        }
+
+        // return the page text
+        return getPage();
     }
 
     let getPage = function getPage(chapterPage = state.chapterPage){

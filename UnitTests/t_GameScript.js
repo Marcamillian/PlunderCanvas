@@ -2,8 +2,21 @@ test = require('tape');
 GameScript = require('./../src/gameObjects/GameScript');
 
 const scriptData = {
+
+    // ! fundamentally wrong - chapter order is important
+    // looking for names should be done in an includes?
     "chapter1":[
-        {text:"Something here"},
+        {
+            setup:{
+                satellites:[0,0,0,0],
+                player:true,
+                opponent:false
+            },
+            text:"Something here",
+            progress:{
+                satellite:5
+            }
+        },
         {text:"Something else"},
         {text:"Aditional thing"}
     ],
@@ -72,15 +85,26 @@ test("Testing page changing",(t)=>{
 
 
     let testScript = GameScript(scriptData);
+    let chapterNames = Object.keys(scriptData);
+    chapterLengths = scriptData.map( chapter.length ) 
+
+
+    t.test(testScript.getPage(), scriptData[chapterNames[0]][0], "Start on first page")
     // !!TODO : Test the page changing functionality
     // advance a page
-    
+    t.test(testScript.nextPage(), scriptData[chapterNames[0]][1], "Returns the next page")
+
+    t.test(testScript.getPage(), scriptData[chapterNames[0]][1], "Really are on the previous page")
 
     // back up a page
+    t.test(testScript.prevPage(), scriptData[chapterNames[0]][0], "Previous page")
 
-    // back up a page ()
+    // try to back up past first page
+    t.throws(()=>{testScript.prevPage()}, /First page of script/i, "Trying to back up past first page of script")
 
-    // -- advance to chapter end
+    // -- advance pages to chapter end
+    t.test(testScript)
+    
 
     // advance over chapter boundary
 
