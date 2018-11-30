@@ -79,12 +79,13 @@ test("Testing get chapterByIndex", (t)=>{
     t.end()
 })
 
-test.skip("Testing chapter present in GameScript", (t)=>{
+test("Testing chapter present in GameScript", (t)=>{
     let testScript = GameScript(scriptData);
+    let chapterNames = scriptData.chapters.map(chapter => chapter.name)
 
-    t.equals(testScript.hasChapter(Object.keys(scriptData)[1]), true, "Chapter correctly identified");
-    t.equals(testScript.hasChapter("Wrong Chapter"), false, "Doesn't have the chapter")
-    t.equals(testScript.hasChapter(), false, "No chapter given to check") // ?? should this return an error or false // funfunfunction forum question
+    t.equals(testScript.hasChapterName(chapterNames[1]), true, "Chapter correctly identified");
+    t.equals(testScript.hasChapterName("Wrong Chapter"), false, "Doesn't have the chapter")
+    t.equals(testScript.hasChapterName(), false, "No chapter given to check") // ?? should this return an error or false // funfunfunction forum question
 
     t.end()
 })
