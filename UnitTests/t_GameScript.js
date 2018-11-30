@@ -2,29 +2,31 @@ test = require('tape');
 GameScript = require('./../src/gameObjects/GameScript');
 
 const scriptData = {
-
-    // ! fundamentally wrong - chapter order is important
-    // looking for names should be done in an includes?
-    "chapter1":[
-        {
-            setup:{
-                satellites:[0,0,0,0],
-                player:true,
-                opponent:false
-            },
-            text:"Something here",
-            progress:{
-                satellite:5
-            }
-        },
-        {text:"Something else"},
-        {text:"Aditional thing"}
-    ],
-    "chapter2":[
-        {text:"second something"},
-        {text:"another something here"},
-        {text:"additonal something 2"}
-    ]
+	"chapters": [
+		{
+			"name": "chapter1",
+			"pages": [{
+					"text": "Click on the field to aim the probe then click the fire button to release a probe"
+				},
+				{
+					"text": " ** interactive section - ends with a probe being fired"
+				}
+			]
+		},
+		{
+			"name": "chapter2",
+			"pages": [{
+					"text": "The probe is also affected by your treasure (visible to you)"
+				},
+				{
+					"text": "Try to compensate for your treasure while finding out which of the back satellites holds opponent treasure"
+				},
+				{
+					"text": " ** Interaction ends when the correct satellite is selected"
+				}
+			]
+		}
+	]
 }
 
 test("Testing GameScript creation ", (t)=>{
@@ -32,33 +34,50 @@ test("Testing GameScript creation ", (t)=>{
     let gameScript = GameScript(scriptData);
 
     let chapters = gameScript.getChapters();
+    let chapterNames = Object.values(scriptData.chapters).map(chapter => chapter.name)
 
     t.equals(chapters.length, 2, "Two chapters in script");
-    t.equals(chapters[0], "chapter1", "Correct name of chapter 1")
+    t.equals(chapters[0].name, chapterNames[0], "Correct name of chapter 1")
 
     t.end()
 })
 
-test("Testing getters", (t)=>{
+test("Testing hasChapter", (t)=>{
+    let gameScript = GameScript(scriptData);
+
+    t.test(gameScript.hasChapterName("chapter1"), true, "Positive identification of chapter name")
+    t.test(gameScript.hasChapterName("chapter1555"), true, "Negative identificaion of chapter name")
+
+    t.end()
+})
+
+test("Testing gatChapterByName", (t)=>{
 
     let testScript = GameScript(scriptData);
+    let chapterNames = Object.values(scriptData.chapters).map( chapter => chapter.name);
     var result;
 
-    // get current chapter
-    t.equals(testScript.getChapter(), scriptData['chapter1'], "getChapter defaults to first chapter")
+    t.throws(()=>{ testScript.getChapterByName()}, /no chapter name entered/i, "No argument - provide chapterName error")
     
-    t.equals(testScript.getChapter("chapter2"), scriptData['chapter2'], "getChapterByName working correctly");
+    t.equals(testScript.getChapterByName(chapterNames[0]), scriptData.chapters[0], "getChapterByName working correctly");
 
-    t.throws(()=>{testScript.getChapter('something unknown'), /Named chapter not found/i, "Throw errror on none found"})
+    t.throws(()=>{testScript.getChapterByName('something unknown'), /Named chapter not found/i, "Throw errror on none found"})
 
-    // get current chapter name
-    t.equals(testScript.getChapterName(), "chapter1", "");
+    t.end()
+})
+
+test.skip("Testing get chapterByIndex", (t)=>{
+    let testScript = GameScript(scriptData);
+
+    t.test(gameScript.getChapterByIndex[0], scriptData.chapters[0], "Gets the first chapter")
+
+    t.throws(()=>{gameScript.getChapter[15]}, /There are only*\([a-zA-Z]+\)* chapters/i, "")
 
 
     t.end()
 })
 
-test("Testing chapter present in GameScript", (t)=>{
+test.skip("Testing chapter present in GameScript", (t)=>{
     let testScript = GameScript(scriptData);
 
     t.equals(testScript.hasChapter(Object.keys(scriptData)[1]), true, "Chapter correctly identified");
@@ -68,7 +87,7 @@ test("Testing chapter present in GameScript", (t)=>{
     t.end()
 })
 
-test("Testing chapter changing", (t)=>{
+test.skip("Testing chapter changing", (t)=>{
 
     let testScript = GameScript(scriptData);
     let chapterNames = Object.keys(scriptData);
@@ -81,7 +100,7 @@ test("Testing chapter changing", (t)=>{
     t.end()
 })
 
-test("Testing page changing",(t)=>{
+test.skip("Testing page changing",(t)=>{
 
 
     let testScript = GameScript(scriptData);
@@ -113,7 +132,7 @@ test("Testing page changing",(t)=>{
     t.end()
 })
 
-test("Testing page get", (t)=>{
+test.skip("Testing page get", (t)=>{
     let testScript = GameScript(scriptData);
 
     var chapterNames = Object.keys(scriptData)

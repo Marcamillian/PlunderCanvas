@@ -1,50 +1,60 @@
 behaviours = require('./../behaviours.js');
 
-const GameScript = function GameScript(scriptData){
+const GameScript = function GameScript({chapters}){
 
-    if (scriptData == undefined) throw new Error("Script mus have a scriptfile")
+    if (chapters == undefined) throw new Error("Script mus have a scriptfile")
 
     var state = {
-        scriptData:scriptData, // need to open the script 
-        scriptChapter:0,
+        scriptChapters:chapters, // need to open the script 
+        currentChapterIndex:0,
         chapterPage:0
     }
 
     // chapter functions
 
-    let getChapter = function getChapter(chapterName = getChapterName()){
-        if(hasChapter(chapterName)){
-            return scriptData[chapterName]
+    let getChapterByName = function getChapterByName(chapterName){
+
+        if(chapterName == undefined) throw new Error("no chapter name entered")
+
+        if(hasChapterName(chapterName)){
+            return state.scriptChapters.find(chapter => chapter.name == chapterName)
         }else{
             throw new Error(`Named chapter not found: ${chapterName}`)
         }
     }
 
-    let hasChapter = function hasChapter(chapterName){
-        return Object.keys(scriptData).includes(chapterName)
+    let getCurentChapter = function getCurrentChapter(){
+        return scriptChapters[currentChapterIndex]
     }
 
-    let getChapterName = function getChapterName(chapterIndex = state.scriptChapter){
-        return Object.keys(scriptData)[chapterIndex];
+    let hasChapterName = function hasChapterName(chapterName){
+        // how search new array by name for chapters
+        // array.filter on chapter name
+        // OR array.map then includes
+        return state.scriptChapters.map(chapter => chapter.name).includes(chapterName)
+    }
+
+    let getChapterName = function getChapterName(chapterIndex = state.currentChapterIndex){
+        return Object.keys(state.scriptChapters)[chapterIndex];
     }
 
     let getChapters = function getScript(){
-        return Object.keys(state.scriptData)
+        return state.scriptChapters
     }
 
     let nextChapter = function nextChapter(){
-        if(state.scriptChapter < getChapters().length -1){
-            state.scriptChapter ++;
+        if(state.currentChapterIndex < getChapters().length -1){
+            state.currentChapterIndex ++;
             state.chapterPage = 0;
-            return getChapters()[state.scriptChapter] // return chapter name
+            return getChapters()[state.currentChapterIndex] // return chapter name
         }else{
             throw new Error("End of chapters")
         }
     }
 
     let prevChapter = function prevChapter(){
-        if(state.scriptChapter > 0){
-            state.scriptChapter --;   // lower the chapter
+        if(state.currentChapterIndex > 0){
+            state.currentChapterIndex --;   // lower the chapter
             state.chapterPage = 0   // go to first page of chapter
             return getChapters()[state.scriptChapter]
         }else{
@@ -57,7 +67,7 @@ const GameScript = function GameScript(scriptData){
     let nextPage = function nextPage(pagesToProgress = 1){
         let thisChapter = getChapterName()
         // if there are pages left
-        if(state.chapterPage + (pagesToProgress-1) <= scriptData[thisChapter].length){
+        if(state.chapterPage + (pagesToProgress-1) <= state.currentChapterIndex[thisChapter].length){
             state.chapterPage += pagesToProgress;
         }else{  
            nextChapter()
@@ -104,14 +114,14 @@ const GameScript = function GameScript(scriptData){
     return Object.assign(
         {
             getChapters,
-            getChapter,
+            getChapterByName,
             getChapterName,
             nextChapter,
             prevChapter,
             getPage,
             nextPage,
             prevPage,
-            hasChapter
+            hasChapterName
         },
         behaviours.stateReporter(state)
 
