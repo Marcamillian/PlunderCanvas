@@ -40,9 +40,6 @@ const GameScript = function GameScript({chapters}){
     }
 
     let hasChapterName = function hasChapterName(chapterName){
-        // how search new array by name for chapters
-        // array.filter on chapter name
-        // OR array.map then includes
         return state.scriptChapters.map(chapter => chapter.name).includes(chapterName)
     }
 
@@ -58,7 +55,7 @@ const GameScript = function GameScript({chapters}){
         if(state.currentChapterIndex < getChapters().length -1){
             state.currentChapterIndex ++;
             state.chapterPage = 0;
-            return getChapters()[state.currentChapterIndex] // return chapter name
+            return getChapterByIndex(state.currentChapterIndex) // return chapter name
         }else{
             throw new Error("End of chapters")
         }
@@ -68,7 +65,7 @@ const GameScript = function GameScript({chapters}){
         if(state.currentChapterIndex > 0){
             state.currentChapterIndex --;   // lower the chapter
             state.chapterPage = 0   // go to first page of chapter
-            return getChapters()[state.scriptChapter]
+            return getChapterByIndex(state.currentChapterIndex)
         }else{
             throw new Error("Start of chapters")
         }
