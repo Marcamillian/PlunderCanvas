@@ -103,12 +103,12 @@ test("Testing chapter changing", (t)=>{
     t.end()
 })
 
-test.skip("Testing page changing",(t)=>{
+test("Testing page changing",(t)=>{
 
 
     let testScript = GameScript(scriptData);
     let chapterNames = Object.keys(scriptData);
-    chapterLengths = scriptData.map( chapter.length ) 
+    chapterLengths = scriptData.chapters.map( chapter => chapter.length );
 
 
     t.test(testScript.getPage(), scriptData[chapterNames[0]][0], "Start on first page")
@@ -125,8 +125,6 @@ test.skip("Testing page changing",(t)=>{
     t.throws(()=>{testScript.prevPage()}, /First page of script/i, "Trying to back up past first page of script")
 
     // -- advance pages to chapter end
-    t.test(testScript)
-    
 
     // advance over chapter boundary
 
