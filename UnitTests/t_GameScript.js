@@ -66,12 +66,14 @@ test("Testing gatChapterByName", (t)=>{
     t.end()
 })
 
-test.skip("Testing get chapterByIndex", (t)=>{
+test("Testing get chapterByIndex", (t)=>{
     let testScript = GameScript(scriptData);
 
-    t.test(gameScript.getChapterByIndex[0], scriptData.chapters[0], "Gets the first chapter")
+    t.test(testScript.getChapterByIndex(0), scriptData.chapters[0], "Gets the first chapter")
 
-    t.throws(()=>{gameScript.getChapter[15]}, /There are only*\([a-zA-Z]+\)* chapters/i, "")
+    t.throws(()=>{testScript.getChapterByIndex(15)}, /chapters in script. Can't find chapter/i, "Throws on index out of top range")
+
+    t.throws(()=>{testScript.getChapterByIndex(-45)}, /chapters in script. Can't find chapter/i, "Throws on index out of bottom range")
 
 
     t.end()

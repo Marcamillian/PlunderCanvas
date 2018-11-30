@@ -23,6 +23,18 @@ const GameScript = function GameScript({chapters}){
         }
     }
 
+    let getChapterByIndex = function getChapterByIndex(chapterIndex){
+        
+        if(chapterIndex == undefined) throw new Error("no chapter index entered")
+
+        if(chapterIndex >=0 && chapterIndex < state.scriptChapters.length){
+            return state.scriptChapters[chapterIndex]
+        }else{
+            throw new Error(`${state.scriptChapters.length} chapters in script. Can't find chapter ${chapterIndex}`)
+        }
+
+    }
+
     let getCurentChapter = function getCurrentChapter(){
         return scriptChapters[currentChapterIndex]
     }
@@ -115,6 +127,7 @@ const GameScript = function GameScript({chapters}){
         {
             getChapters,
             getChapterByName,
+            getChapterByIndex,
             getChapterName,
             nextChapter,
             prevChapter,
