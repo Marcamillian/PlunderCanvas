@@ -35,6 +35,10 @@ const GameScript = function GameScript({chapters}){
 
     }
 
+    let getCurrentChapterIndex = function getCurrentChapterIndex(){
+        return state.currentChapterIndex;
+    }
+
     let getCurentChapter = function getCurrentChapter(){
         return scriptChapters[currentChapterIndex]
     }
@@ -51,6 +55,8 @@ const GameScript = function GameScript({chapters}){
         return state.scriptChapters
     }
 
+
+    // TODO : Change this to handle more chapters at once
     let nextChapter = function nextChapter(){
         if(state.currentChapterIndex < getChapters().length -1){
             state.currentChapterIndex ++;
@@ -61,6 +67,7 @@ const GameScript = function GameScript({chapters}){
         }
     }
 
+    // TODO : Change this to accept more chapter chages at once
     let prevChapter = function prevChapter(){
 
         if(state.currentChapterIndex > 0){
@@ -145,6 +152,7 @@ const GameScript = function GameScript({chapters}){
             getChapters,
             getChapterByName,
             getChapterByIndex,
+            getCurrentChapterIndex,
             getChapterName,
             nextChapter,
             prevChapter,

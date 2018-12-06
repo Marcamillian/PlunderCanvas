@@ -5,29 +5,31 @@ const scriptData = {
 	"chapters": [
 		{
 			"name": "chapter1",
-			"pages": [{
-					"text": "Click on the field to aim the probe then click the fire button to release a probe"
-				},
-				{
-					"text": " ** interactive section - ends with a probe being fired"
-				}
+			"pages": [
+                { "text": "Click on the field to aim the probe then click the fire button to release a probe" },
+				{ "text": " ** interactive section - ends with a probe being fired" }
 			]
 		},
 		{
 			"name": "chapter2",
-			"pages": [{
-					"text": "The probe is also affected by your treasure (visible to you)"
-				},
-				{
-					"text": "Try to compensate for your treasure while finding out which of the back satellites holds opponent treasure"
-				},
-				{
-					"text": " ** Interaction ends when the correct satellite is selected"
-				}
+			"pages": [
+                { "text": "The probe is also affected by your treasure (visible to you)"},
+				{ "text": "Try to compensate for your treasure while finding out which of the back satellites holds opponent treasure"},
+				{ "text": " ** Interaction ends when the correct satellite is selected"}
 			]
-		}
+        },
+        {
+            "name":"chapter3",
+            "pages":[
+                {"text": "Something that the tutorial should say"},
+                {"text": "Additional thing that the tutorial is expected to say"},
+                {"text" : "Last thing that is expected of the tutorial"}
+            ]
+        }
 	]
 }
+
+// !! TODO - was adding another chapter to test crossing 2 chapter boundaries
 
 test("Testing GameScript creation ", (t)=>{
     
@@ -36,7 +38,7 @@ test("Testing GameScript creation ", (t)=>{
     let chapters = gameScript.getChapters();
     let chapterNames = Object.values(scriptData.chapters).map(chapter => chapter.name)
 
-    t.equals(chapters.length, 2, "Two chapters in script");
+    t.equals(chapters.length, scriptData.chapters.length, "Correct number of chapters in script");
     t.equals(chapters[0].name, chapterNames[0], "Correct name of chapter 1")
 
     t.end()
@@ -94,11 +96,25 @@ test("Testing chapter changing", (t)=>{
 
     let testScript = GameScript(scriptData);
     let chapterNames = scriptData.chapters.map( chapter => chapter.name)
+    let numberOfChapters = scriptData.chapters.length;
+    var chaptersTillEnd;
+
+    t.throws(()=>{testScript.prevChapter()}, /Start of chapters/i, "Can't go before first chapter")
 
     t.equals(testScript.nextChapter(), scriptData.chapters[1], "Next chapter provided on chapter change")
+   
+    // proceed to end of chapters
+    chaptersTillEnd = (numberOfChapters - 1) - testScript.getCurrentChapterIndex()
+    for ( i = 0; i < chaptersTillEnd; i++ ){
+        testScript.nextChapter()
+    }
+
+    // check that we can't go further than this
     t.throws(()=>{testScript.nextChapter()}, /End of chapters/i, "Can't go further than last chapter") 
-    t.equals(testScript.prevChapter(), scriptData.chapters[0],"Previous chapter is correct")
-    t.throws(()=>{testScript.prevChapter()}, /Start of chapters/i, "Can't go before first chapter")
+
+    // check that we can go back a chapter
+    t.equals(testScript.prevChapter(), scriptData.chapters[numberOfChapters -1 -1],"Previous chapter is correct")
+    
     
     t.end()
 })
