@@ -5,7 +5,7 @@ Tutorial Additions -
  * 
 
 
- == !TODO: Game Script
+ == !! TODO: Game Script
  - In order to show infomation to the user in the tutorial - need some kind of dialog box.
  - Decided to term this dialog the "GameScript"
  - Requirements of this are - contain next and interation triggers to progress the tutorial
@@ -23,3 +23,10 @@ Tutorial Additions -
 
 NB - Do we need to show chapter & page numbers?
 
+// issue
+
+page changing over chapters
+
+- change more than pages in chapters
+- if jump back a chapter want to go to beginning
+- if step back a number of 

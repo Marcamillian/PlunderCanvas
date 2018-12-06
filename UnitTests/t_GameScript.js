@@ -105,30 +105,42 @@ test("Testing chapter changing", (t)=>{
 
 test("Testing page changing",(t)=>{
 
-
     let testScript = GameScript(scriptData);
-    let chapterNames = Object.keys(scriptData);
-    chapterLengths = scriptData.chapters.map( chapter => chapter.length );
+    let chapterNames = scriptData.chapters.map( chapter => chapter.name);
+    chapterLengths = scriptData.chapters.map( chapter => chapter.pages.length );
 
-
-    t.test(testScript.getPage(), scriptData[chapterNames[0]][0], "Start on first page")
-    // !!TODO : Test the page changing functionality
+    t.equals(testScript.getPage(), scriptData.chapters[0].pages[0], "Start on first page")
+    
     // advance a page
-    t.test(testScript.nextPage(), scriptData[chapterNames[0]][1], "Returns the next page")
-
-    t.test(testScript.getPage(), scriptData[chapterNames[0]][1], "Really are on the previous page")
+    t.equals(testScript.pageForward(), scriptData.chapters[0].pages[1], "Returns the next page")
+    t.equals(testScript.getPage(), scriptData.chapters[0].pages[1], "Really are on the next page")
 
     // back up a page
-    t.test(testScript.prevPage(), scriptData[chapterNames[0]][0], "Previous page")
+    t.equals(testScript.pageBackward(), scriptData.chapters[0].pages[0], "Previous page")
+    t.equals(testScript.getPage(), scriptData.chapters[0].pages[0], "Really are on the previous page")
 
     // try to back up past first page
-    t.throws(()=>{testScript.prevPage()}, /First page of script/i, "Trying to back up past first page of script")
+    t.throws(()=>{testScript.pageBackward()}, /First page of script/i, "Trying to back up past first page of script")
 
     // -- advance pages to chapter end
+    t.equals(testScript.pageForward(chapterLengths[0] -1 ), scriptData.chapters[0].pages[ chapterLengths[0]-1 ], "Advance multiple pages (to end)" )
+    t.equals( testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-1], "Really are at the end page" );
 
     // advance over chapter boundary
+    t.equals(testScript.pageForward(), scriptData.chapters[1].pages[0], "Advance over chapter boundary");
+    t.equals( testScript.getPage(), scriptData.chapters[1].pages[0], "Really are on first page of next chapter")
 
-    //
+    // reverse over chapter boundary
+    t.equals( testScript.pageBackward(), scriptData.chapters[0].pages[chapterLengths[0]-1], "On last page of the first chapter")
+    t.equals( testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-1], "Really are on the last page of the first chapter")
+
+    // advance over page boundary by more than one
+    t.equals(testScript.pageForward(2), scriptData.chapters[1].pages[1], "Can advance over page boundary by more than one");
+    t.equals( testScript.getPage(), scriptData.chapters[1].pages[1], "really are on the first page second chapter")
+
+    // back up over page boundary by more than one
+    t.equals(testScript.pageBackward(3), scriptData.chapters[0].pages[chapterLengths[0]-2], "Backe up over page boundary by more than one");
+    t.equals(testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-2], "Really are on the second to last page")
 
     t.end()
 })

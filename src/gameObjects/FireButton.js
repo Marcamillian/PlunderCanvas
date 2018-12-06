@@ -7,7 +7,7 @@ const FireButton = function FireButton(position, targetObject, triggerArgs){
         position: {x:60, y:20},
         size: {width: 40, height:20}
     }
-    // !! INIT STRAIGHT AWAY
+    // INIT STRAIGHT AWAY
     var init = function init(position){
         state.position.x = position.x;
         state.position.y = position.y

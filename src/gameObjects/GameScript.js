@@ -62,9 +62,9 @@ const GameScript = function GameScript({chapters}){
     }
 
     let prevChapter = function prevChapter(){
+
         if(state.currentChapterIndex > 0){
             state.currentChapterIndex --;   // lower the chapter
-            state.chapterPage = 0   // go to first page of chapter
             return getChapterByIndex(state.currentChapterIndex)
         }else{
             throw new Error("Start of chapters")
@@ -73,35 +73,53 @@ const GameScript = function GameScript({chapters}){
 
     // page functions
 
-    let nextPage = function nextPage(pagesToProgress = 1){
+    let pageForward = function pageForward(pagesToProgress = 1){
 
-        let currentChapterLength = getChapterByIndex(state.currentChapterIndex).length;
+        let currentChapterLength = getChapterByIndex(state.currentChapterIndex).pages.length;
 
         // if there are pages left
-        if(state.chapterPage + (pagesToProgress-1) <= currentChapterLength){
+        if(state.chapterPage + (pagesToProgress) < currentChapterLength){
+
             state.chapterPage += pagesToProgress;
         }else{  
-           nextChapter()
+
+            let remainingPagesInChapter = getChapterByIndex(state.currentChapterIndex).pages.length - state.chapterPage;
+            let remainingPages = pagesToProgress - remainingPagesInChapter;
+            nextChapter()
+            pageForward(remainingPages)
         }
 
         // return the page text
         return getPage();
     }
 
-    let prevPage = function prevPage(pagesToBackUp = 1){
+    let pageBackward = function pageBackward(pagesToBackUp = 1){
+
         // if there are pages left
         if(state.chapterPage - pagesToBackUp >= 0){
             state.chapterPage -= pagesToBackUp;
-        }else{ 
+        }else{
+            // how many pages to back up after getting out of current chapter 
+            let remainingPagesToBackUp = pagesToBackUp - state.chapterPage;
+
+            // go to previous chapter
             try{
                 prevChapter()
-            } catch(e){
-                if (/Start of chapters/i.test(e.message)){
+                // backed up a page by switching chapters
+                remainingPagesToBackUp -= 1
+                // set page to the last page of prev chapter
+                state.chapterPage = state.scriptChapters[state.currentChapterIndex].pages.length -1;
+                // back up any remaining pages
+                pageBackward(remainingPagesToBackUp)
+            }catch(e){
+                if(/Start of chapters/i.test(e.message)){
                     throw new Error("First page of script")
                 }else{
                     throw e
                 }
             }
+            
+            
         }
 
         // return the page text
@@ -131,8 +149,8 @@ const GameScript = function GameScript({chapters}){
             nextChapter,
             prevChapter,
             getPage,
-            nextPage,
-            prevPage,
+            pageForward,
+            pageBackward,
             hasChapterName
         },
         behaviours.stateReporter(state)

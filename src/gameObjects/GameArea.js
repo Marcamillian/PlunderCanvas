@@ -31,7 +31,7 @@ const GameArea = function GameArea(Ux, Uy){
 
     }
     
-    // !! CALL INIT STRAIGHT AWAY
+    // CALL INIT STRAIGHT AWAY
     var init = function init(Ux, Uy){
         // overall screen size
         state.screenSize = {width: 400*Ux, height: 600*Uy}
