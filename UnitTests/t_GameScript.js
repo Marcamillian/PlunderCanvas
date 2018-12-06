@@ -29,8 +29,6 @@ const scriptData = {
 	]
 }
 
-// !! TODO - was adding another chapter to test crossing 2 chapter boundaries
-
 test("Testing GameScript creation ", (t)=>{
     
     let gameScript = GameScript(scriptData);
@@ -121,11 +119,22 @@ test("Testing chapter changing", (t)=>{
 
 test("Testing page changing",(t)=>{
 
-    let testScript = GameScript(scriptData);
-    let chapterNames = scriptData.chapters.map( chapter => chapter.name);
-    chapterLengths = scriptData.chapters.map( chapter => chapter.pages.length );
+    // TODO: Split these out into sub tests that don't interact with eachother
 
+    let testScript = GameScript(scriptData);
+    let numberOfChapters = scriptData.chapters.length;
+    let chapterLengths = scriptData.chapters.map( chapter => chapter.pages.length );
+    
+    let lastChapterIndex = numberOfChapters -1;
+    let lastPageOfScript = scriptData.chapters[lastChapterIndex].pages[chapterLengths[lastChapterIndex]-1];
+    
+    let lastPageFirstChapter = scriptData.chapters[0].pages[chapterLengths[0]-1]
+
+    // check that we are on the first page of the first chapter
     t.equals(testScript.getPage(), scriptData.chapters[0].pages[0], "Start on first page")
+
+    // try to back up past first page
+    t.throws(()=>{testScript.pageBackward()}, /First page of script/i, "Trying to back up past first page of script")
     
     // advance a page
     t.equals(testScript.pageForward(), scriptData.chapters[0].pages[1], "Returns the next page")
@@ -135,28 +144,51 @@ test("Testing page changing",(t)=>{
     t.equals(testScript.pageBackward(), scriptData.chapters[0].pages[0], "Previous page")
     t.equals(testScript.getPage(), scriptData.chapters[0].pages[0], "Really are on the previous page")
 
-    // try to back up past first page
-    t.throws(()=>{testScript.pageBackward()}, /First page of script/i, "Trying to back up past first page of script")
-
     // -- advance pages to chapter end
-    t.equals(testScript.pageForward(chapterLengths[0] -1 ), scriptData.chapters[0].pages[ chapterLengths[0]-1 ], "Advance multiple pages (to end)" )
-    t.equals( testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-1], "Really are at the end page" );
+    t.equals(testScript.pageForward(chapterLengths[0] -1 ), lastPageFirstChapter, "Advance multiple pages (to end)" )
+    t.equals( testScript.getPage(), lastPageFirstChapter , "Really are at the end page" );
 
     // advance over chapter boundary
     t.equals(testScript.pageForward(), scriptData.chapters[1].pages[0], "Advance over chapter boundary");
     t.equals( testScript.getPage(), scriptData.chapters[1].pages[0], "Really are on first page of next chapter")
 
     // reverse over chapter boundary
-    t.equals( testScript.pageBackward(), scriptData.chapters[0].pages[chapterLengths[0]-1], "On last page of the first chapter")
-    t.equals( testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-1], "Really are on the last page of the first chapter")
+    t.equals( testScript.pageBackward(), lastPageFirstChapter, "On last page of the first chapter")
+    t.equals( testScript.getPage(), lastPageFirstChapter, "Really are on the last page of the first chapter")
 
     // advance over page boundary by more than one
     t.equals(testScript.pageForward(2), scriptData.chapters[1].pages[1], "Can advance over page boundary by more than one");
-    t.equals( testScript.getPage(), scriptData.chapters[1].pages[1], "really are on the first page second chapter")
+    t.equals( testScript.getPage(), scriptData.chapters[1].pages[1], "really are on the second page second chapter")
 
     // back up over page boundary by more than one
-    t.equals(testScript.pageBackward(3), scriptData.chapters[0].pages[chapterLengths[0]-2], "Backe up over page boundary by more than one");
-    t.equals(testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-2], "Really are on the second to last page")
+    t.equals(testScript.pageBackward(3), scriptData.chapters[0].pages[chapterLengths[0]-2], "Back up over page boundary by more than one");
+    t.equals(testScript.getPage(), scriptData.chapters[0].pages[chapterLengths[0]-2], "Really are on the second to last page of the first chapter")
+
+    // advance to the last chapter
+    for (i=0; i < lastChapterIndex; i++){
+        testScript.nextChapter();
+    }
+    // advance to lastPage of last chapter
+    testScript.pageForward(chapterLengths[ lastChapterIndex ] -1)
+
+    // check that we are on the last page of the last chapter 
+    t.equals(testScript.getCurrentChapter(), scriptData.chapters[lastChapterIndex], "On the last chapter of script")
+    t.equals(testScript.getPage(), lastPageOfScript, "On the last page of the last chapter")
+
+    // try to go an additional page
+    t.throws( ()=>{ testScript.pageForward()}, /Last page of script/i, "Can't go past last page of script" );
+    t.equal(testScript.getPage(), lastPageOfScript, "Still on the last page of the script")
+
+    let endToStart = chapterLengths.reduce( (acc, length, index)=>{
+        return  (index ==0 ) ? acc : acc + length
+    },0)
+
+    // move to first chapter (over 2 chapter boundaries)
+    t.equals( testScript.pageBackward(endToStart), lastPageFirstChapter, "Page backward through multiple chapter boundaries")    
+    // move to last chapter (over 2 chapter boundaries)
+    t.equals( testScript.pageForward(endToStart), lastPageOfScript, "Page forward through multiple chapter boundaries ")
+
+
 
     t.end()
 })

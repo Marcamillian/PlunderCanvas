@@ -39,8 +39,8 @@ const GameScript = function GameScript({chapters}){
         return state.currentChapterIndex;
     }
 
-    let getCurentChapter = function getCurrentChapter(){
-        return scriptChapters[currentChapterIndex]
+    let getCurrentChapter = function getCurrentChapter(){
+        return state.scriptChapters[state.currentChapterIndex]
     }
 
     let hasChapterName = function hasChapterName(chapterName){
@@ -90,10 +90,20 @@ const GameScript = function GameScript({chapters}){
             state.chapterPage += pagesToProgress;
         }else{  
 
-            let remainingPagesInChapter = getChapterByIndex(state.currentChapterIndex).pages.length - state.chapterPage;
-            let remainingPages = pagesToProgress - remainingPagesInChapter;
-            nextChapter()
-            pageForward(remainingPages)
+            try{
+                let remainingPagesInChapter = getChapterByIndex(state.currentChapterIndex).pages.length - state.chapterPage;
+                let remainingPages = pagesToProgress - remainingPagesInChapter;
+
+                nextChapter()
+                pageForward(remainingPages)
+            }catch(e){
+                if( /End of chapters/i.test(e.message) ){
+                    throw new Error("Last page of script")
+                }else{
+                    throw e
+                }
+            }
+            
         }
 
         // return the page text
@@ -153,13 +163,15 @@ const GameScript = function GameScript({chapters}){
             getChapterByName,
             getChapterByIndex,
             getCurrentChapterIndex,
+            getCurrentChapter,
             getChapterName,
             nextChapter,
             prevChapter,
             getPage,
             pageForward,
             pageBackward,
-            hasChapterName
+            hasChapterName,
+
         },
         behaviours.stateReporter(state)
 
