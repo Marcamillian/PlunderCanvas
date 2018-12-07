@@ -3,6 +3,10 @@ var appManager = require('./AppManager.js');
 init = function init(){
     appManager.init()
 }
+
+window.app = {
+    tutorial:appManager.tutorialModule
+}
 // -- launch order
 // App Manager -- initiates the other states - holds the flow
     // Menu Manager-- draws the menu and holds the logic

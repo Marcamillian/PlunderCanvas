@@ -23,10 +23,4 @@ Tutorial Additions -
 
 NB - Do we need to show chapter & page numbers?
 
-// issue
-
-page changing over chapters
-
-- change more than pages in chapters
-- if jump back a chapter want to go to beginning
-- if step back a number of 
+// !! TODO

@@ -1,4 +1,5 @@
 gObjs = require('./../gameObjects/objectBundle.js');
+tutorialScript = require('./../assets/TutorialText.json');
 
 const TutorialModule = function TutorialModule(screenSize){
     const modes = ['discover', 'interfere', 'overlap']
@@ -11,7 +12,8 @@ const TutorialModule = function TutorialModule(screenSize){
         probe: undefined,
         mode: undefined,
         guessButton: undefined,
-        guess: false
+        guess: false,
+        script: gObjs.GameScript(tutorialScript)
     }
     var init = function init(screenSize, treasureDist){
         
@@ -238,7 +240,8 @@ const TutorialModule = function TutorialModule(screenSize){
         {
             render: render,
             update:update,
-            toggleMode: toggleMode
+            toggleMode: toggleMode,
+            script: state.script
         }
     )
 }

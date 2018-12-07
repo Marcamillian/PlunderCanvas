@@ -155,8 +155,6 @@ const GameScript = function GameScript({chapters}){
         return activeChapter.pages[chapterPage]
     }
 
-    // TODO: Check for unmet interaction test
-
     return Object.assign(
         {
             getChapters,

@@ -136,5 +136,6 @@ var changeModules = function changeModules(activateModule){
 }
 module.exports = {
     init: init,
-    mainLoop: mainLoop
+    mainLoop: mainLoop,
+    tutorialModule
 }

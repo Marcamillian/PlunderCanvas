@@ -9,16 +9,20 @@ var Ship = require('./Ship.js')
 var TutorialLayout = require('./TutorialLayout.js')
 var Button = require('./Button.js')
 var AIPlayer = require('./AIPlayer.js')
+var GameScript = require('./GameScript.js')
+// does this build
+
 
 module.exports = {
-    ClickMarker: ClickMarker,
-    FireButton: FireButton,
-    GameArea: GameArea,
-    InfoPopUp: InfoPopUp,
-    Probe: Probe,
-    Satellite: Satellite,
-    Ship: Ship,
-    TutorialLayout: TutorialLayout,
-    Button: Button,
-    AIPlayer: AIPlayer
+    ClickMarker,
+    FireButton,
+    GameArea,
+    InfoPopUp,
+    Probe,
+    Satellite,
+    Ship,
+    TutorialLayout,
+    Button,
+    AIPlayer,
+    GameScript
 }
